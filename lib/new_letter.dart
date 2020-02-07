@@ -3,7 +3,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:intl/intl.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:http/http.dart' as http;
-import 'dart:convert';
 
 class NewLetter extends StatefulWidget {
   @override
@@ -17,6 +16,8 @@ class _NewLetterState extends State<NewLetter> {
   String letterType = "Surat Baru";
   String letterCode = "ket_pergi";
   Widget form;
+
+  bool isLoading = false;
 
   String nama, tempatLahir, agama, kebangsaan, statNikah, tanggalLahir, idWarga;
   String pekerjaan, alamat, jenKel, nik;
@@ -45,6 +46,19 @@ class _NewLetterState extends State<NewLetter> {
 
   @override
   Widget build(BuildContext context) {
+    return fullBody();
+  }
+
+  Widget fullBody(){
+    return Stack( 
+      children: <Widget>[
+        appBody(),
+        loadingScreen()
+      ],
+    );
+  }
+
+  Widget appBody(){
     return Scaffold(
       appBar: AppBar(
         title: Text(letterType),
@@ -69,29 +83,19 @@ class _NewLetterState extends State<NewLetter> {
     );
   }
 
-  Widget fullBody(){
-    return Stack(
-      children: <Widget>[
-
-      ],
-    );
-  }
-
   Widget loadingScreen(){
-    
-  }
-
-  Widget mainBody(){
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 5),
-      child: ListView(
-        children: <Widget>[
-          showFormChooseLet(),
-          showFormGeneral(),
-          form
-        ],
-      ),
-    );
+    if(isLoading){
+      return SizedBox.expand(
+        child: Container(
+          color: Color.fromARGB(70, 255, 255, 255),
+          child: Center(
+            child: CircularProgressIndicator(),
+          ),
+        )
+      );
+    }else{
+      return SizedBox.shrink();
+    }
   }
 
   Widget showForm(){
@@ -232,14 +236,6 @@ class _NewLetterState extends State<NewLetter> {
         onChanged: (val){
           setState(() {
             letterCode = val;
-            // statCerai = null;
-            // jenKelSalah = null;
-            // jenKelAnak = null;
-            // kebangsaanAnak = null;
-            // hubunganOrtu = null;
-            // kebangsaanPasangan = null;
-            // tanggalLahirPasangan = null;
-            // tanggalLahirAnak = null;
             setForm();
           });
         },
@@ -483,18 +479,16 @@ class _NewLetterState extends State<NewLetter> {
 
   void validateAndSubmit() {
     setForm();
-    setState(() {
-      // errorMessage = "";
-      // isLoading = true;
-      // signInButtonStat = false;
-    });
-
-    // await Future.delayed(Duration(seconds: 10));
 
     FocusScope.of(context).unfocus();
 
     if (validateAndSave()) {
+      setState(() {
+        // errorMessage = "";
+        isLoading = true;
+      });
       print("OK");
+      setGeneralData();
     }
   }
 
@@ -1668,6 +1662,7 @@ class _NewLetterState extends State<NewLetter> {
         "nip_ttd": "-"
       };
 
+
       switch (letterCode) {
         case "ket_pergi":
           setFormBerpergian(data);
@@ -1709,6 +1704,10 @@ class _NewLetterState extends State<NewLetter> {
     };
 
     generalData.addAll(subData);
+    // print(generalData);
+    // setState(() {
+    //   isLoading = false;
+    // });
     String formURI = "https://www.terraciv.me/api/set_surat_keterangan_pergi";
     submitForm(generalData, formURI);
   }
@@ -1719,6 +1718,10 @@ class _NewLetterState extends State<NewLetter> {
     };
 
     generalData.addAll(subData);
+    // print(generalData);
+    // setState(() {
+    //   isLoading = false;
+    // });
     String formURI = "https://www.terraciv.me/api/set_surat_kelakuan_baik";
     submitForm(generalData, formURI);
   }
@@ -1734,9 +1737,16 @@ class _NewLetterState extends State<NewLetter> {
       };
 
       generalData.addAll(subData);
+      // print(generalData);
+      // setState(() {
+      //   isLoading = false;
+      // });
       String formURI = "https://www.terraciv.me/api/set_surat_keterangan_cerai";
       submitForm(generalData, formURI);
     }else{
+      setState(() {
+        isLoading = false;
+      });
       Fluttertoast.showToast(
         msg: "Harap pilih status cerai",
         toastLength: Toast.LENGTH_LONG,
@@ -1763,6 +1773,10 @@ class _NewLetterState extends State<NewLetter> {
     };
 
     generalData.addAll(subData);
+    // print(generalData);
+    // setState(() {
+    //   isLoading = false;
+    // });
     String formURI = "https://www.terraciv.me/api/set_surat_keterangan_ksm";
     submitForm(generalData, formURI);
   }
@@ -1774,6 +1788,10 @@ class _NewLetterState extends State<NewLetter> {
     };
 
     generalData.addAll(subData);
+    // print(generalData);
+    // setState(() {
+    //   isLoading = false;
+    // });
     String formURI = "https://www.terraciv.me/api/set_surat_keterangan_bebas_pajak";
     submitForm(generalData, formURI);
   }
@@ -1791,6 +1809,10 @@ class _NewLetterState extends State<NewLetter> {
       };
 
       generalData.addAll(subData);
+      // print(generalData);
+      // setState(() {
+      //   isLoading = false;
+      // });
       String formURI = "https://www.terraciv.me/api/set_surat_keterangan_beda_nama";
       submitForm(generalData, formURI);
     }else{
@@ -1811,6 +1833,10 @@ class _NewLetterState extends State<NewLetter> {
     };
 
     generalData.addAll(subData);
+    // print(generalData);
+    // setState(() {
+    //   isLoading = false;
+    // });
     String formURI = "https://www.terraciv.me/api/set_surat_keterangan_kehilangan";
     submitForm(generalData, formURI);
   }
@@ -1840,6 +1866,10 @@ class _NewLetterState extends State<NewLetter> {
       };
 
       generalData.addAll(subData);
+      // print(generalData);
+      // setState(() {
+      //   isLoading = false;
+      // });
       String formURI = "https://www.terraciv.me/api/set_surat_keterangan_telah_menikah";
       submitForm(generalData, formURI);
     }else{
@@ -1874,6 +1904,10 @@ class _NewLetterState extends State<NewLetter> {
       };
 
       generalData.addAll(subData);
+      // print(generalData);
+      // setState(() {
+      //   isLoading = false;
+      // });
       String formURI = "https://www.terraciv.me/api/set_surat_pertanggung_jawaban_ortu";
       submitForm(generalData, formURI);
     }else{
@@ -1890,22 +1924,34 @@ class _NewLetterState extends State<NewLetter> {
       Map<String,String> header = {
         "x-api-key": "5baa441c93eaa4d6fb824dfc561a96d6",
         "Content-Type": "application/x-www-form-urlencoded"};
-      http.Response data = await http.post(formURI, body: body, headers: header);
+      http.Response data = await http.post(formURI, body: body, headers: header).timeout(
+        Duration(seconds: 5)
+      );
 
       setState(() {
-        // isLoading = false;
-        // signInButtonStat = true;
+        isLoading = false;
       });
 
       if(data.statusCode == 200){
-        print("Pass Corect");
-        // print(detailDataWarga);
-        // Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (context) => Home()));
+        Fluttertoast.showToast(
+          msg: "Data Berhasil Dikirim",
+          toastLength: Toast.LENGTH_LONG,
+          gravity: ToastGravity.BOTTOM
+        );
+        Navigator.of(context).pop();
       }else{
         
       }
     }catch(e){
+      setState(() {
+        isLoading = false;
+      });
 
+      Fluttertoast.showToast(
+          msg: e.toString(),
+          toastLength: Toast.LENGTH_LONG,
+          gravity: ToastGravity.BOTTOM
+        );
     }
   }
 }

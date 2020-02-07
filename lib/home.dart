@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'logo.dart';
 
@@ -9,26 +11,32 @@ class Home extends StatefulWidget {
 class _HomeState extends State<Home> {
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        actions: <Widget>[
-          actionButtonNotif()    
-        ],
-      ),
-      body: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        crossAxisAlignment: CrossAxisAlignment.end,
-        children: <Widget>[
-          Logo(),
-          SizedBox(height: 50),
-          buttonNewLetter(),
-          SizedBox(height: 10),
-          buttonLetterHistory(),
-          SizedBox(height: 10),
-          buttonSetting()
-        ],
+    return WillPopScope(
+      onWillPop: (){
+        exit(0);
+        return Future.value(true);
+      },
+      child: Scaffold(
+        appBar: AppBar(
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          actions: <Widget>[
+            actionButtonNotif()    
+          ],
+        ),
+        body: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.end,
+          children: <Widget>[
+            Logo(),
+            SizedBox(height: 50),
+            buttonNewLetter(),
+            SizedBox(height: 10),
+            buttonLetterHistory(),
+            SizedBox(height: 10),
+            buttonSetting()
+          ],
+        ),
       ),
     );
   }
