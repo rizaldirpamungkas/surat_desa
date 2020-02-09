@@ -36,7 +36,7 @@ class _HistoryLetterState extends State<HistoryLetter> {
           )
         )
       ),
-      body: showList()
+      body: listCard()
     );
   }
 
@@ -55,19 +55,80 @@ class _HistoryLetterState extends State<HistoryLetter> {
     }
   }
 
-  Widget showList(){
+  Widget listCard(){
     return Card(
       margin: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-      child: Column(
-        children: <Widget>[
-          Padding(
-            padding: const EdgeInsets.all(6),
-            child: Icon(
-              Icons.book,
-              size: 35
-            ),
-          ),
-        ],
+      child: InkWell(
+        onTap: (){
+          print("Detail Pressed");
+        },
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: <Widget>[
+            ListTile(
+              leading: Column(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: <Widget>[
+                  Icon(
+                    Icons.book,
+                    size: 50,
+                    color: Colors.black38,
+                  ),
+                ],
+              ),
+              title: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: <Widget>[
+                  Text(
+                    "SRT001", 
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontFamily: 'Montserrat',
+                      color: Colors.black54,
+                      fontSize: 20
+                    )
+                  ),
+                  IconButton(
+                    icon: Icon(Icons.more_vert, color: Colors.black45), 
+                    onPressed: (){
+                      print("More Pressed");
+                    }
+                  )
+                ],
+              ),
+              subtitle: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: <Widget>[
+                  Text("Surat Pertanggungjawaban Orangtua"),
+                  Container(
+                    margin: EdgeInsets.symmetric(vertical: 5),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: <Widget>[
+                        Text(
+                          "Sudah di Cetak",
+                          style: TextStyle(
+                            fontWeight: FontWeight.w300,
+                            fontFamily: 'Montserrat',
+                            color: Colors.black45
+                          )
+                        ),
+                        Text(
+                          "13 Maret 2020",
+                          style: TextStyle(
+                            fontWeight: FontWeight.w300,
+                            fontFamily: 'Montserrat',
+                            color: Colors.black45
+                          )
+                        ),
+                      ],
+                    ),
+                  )
+                ],
+              ),
+            )
+          ],
+        ),
       )
     );
   }
