@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:surat_desa/login.dart';
 import 'new_letter.dart';
+import 'history_letter.dart';
 import 'home.dart';
 
 void main() => runApp(MyApp());
@@ -27,6 +28,11 @@ class MyApp extends StatelessWidget {
           case '/home/new_letter':
             return MaterialPageRoute(
               builder: (context) => NewLetter(),
+            );
+            break;
+          case '/home/history_letter':
+            return MaterialPageRoute(
+              builder: (context) => HistoryLetter(),
             );
             break;
           default:
