@@ -1925,7 +1925,18 @@ class _NewLetterState extends State<NewLetter> {
         "x-api-key": "5baa441c93eaa4d6fb824dfc561a96d6",
         "Content-Type": "application/x-www-form-urlencoded"};
       http.Response data = await http.post(formURI, body: body, headers: header).timeout(
-        Duration(seconds: 5)
+        Duration(seconds: 300),
+        onTimeout: (){
+          isLoading = false;
+
+          Fluttertoast.showToast(
+            msg: "Timeout Koneksi",
+            toastLength: Toast.LENGTH_LONG,
+            gravity: ToastGravity.BOTTOM
+          );
+
+          return null;
+        }
       );
 
       setState(() {
@@ -1948,10 +1959,10 @@ class _NewLetterState extends State<NewLetter> {
       });
 
       Fluttertoast.showToast(
-          msg: e.toString(),
-          toastLength: Toast.LENGTH_LONG,
-          gravity: ToastGravity.BOTTOM
-        );
+        msg: e.toString(),
+        toastLength: Toast.LENGTH_LONG,
+        gravity: ToastGravity.BOTTOM
+      );
     }
   }
 }

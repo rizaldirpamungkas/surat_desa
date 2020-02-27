@@ -1,4 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:fluttertoast/fluttertoast.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 
 class HistoryLetter extends StatefulWidget {
   @override
@@ -7,7 +11,15 @@ class HistoryLetter extends StatefulWidget {
 
 class _HistoryLetterState extends State<HistoryLetter> {
 
-  bool isLoading = false;
+  bool isLoading = true;
+  String idWarga;
+  List<Surat> surats = [];
+
+  @override
+  void initState() {
+    setPref();
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -36,7 +48,7 @@ class _HistoryLetterState extends State<HistoryLetter> {
           )
         )
       ),
-      body: listCard()
+      body: showList()
     );
   }
 
@@ -55,12 +67,12 @@ class _HistoryLetterState extends State<HistoryLetter> {
     }
   }
 
-  Widget listCard(){
+  Widget listCard(BuildContext context, int index){
     return Card(
       margin: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
       child: InkWell(
         onTap: (){
-          print("Detail Pressed");
+          detailLetter(index, context);
         },
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -80,33 +92,28 @@ class _HistoryLetterState extends State<HistoryLetter> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: <Widget>[
                   Text(
-                    "SRT001", 
+                    surats[index].idSurat.toUpperCase(), 
                     style: TextStyle(
                       fontWeight: FontWeight.bold,
                       fontFamily: 'Montserrat',
                       color: Colors.black54,
-                      fontSize: 20
-                    )
+                      fontSize: 20,
+                    ),
                   ),
-                  IconButton(
-                    icon: Icon(Icons.more_vert, color: Colors.black45), 
-                    onPressed: (){
-                      print("More Pressed");
-                    }
-                  )
+                  statOptionCard(surats[index].noSurat)
                 ],
               ),
               subtitle: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: <Widget>[
-                  Text("Surat Pertanggungjawaban Orangtua"),
+                  Text(surats[index].tipeSurat),
                   Container(
                     margin: EdgeInsets.symmetric(vertical: 5),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: <Widget>[
                         Text(
-                          "Sudah di Cetak",
+                          statSurat(surats[index].noSurat),
                           style: TextStyle(
                             fontWeight: FontWeight.w300,
                             fontFamily: 'Montserrat',
@@ -114,7 +121,7 @@ class _HistoryLetterState extends State<HistoryLetter> {
                           )
                         ),
                         Text(
-                          "13 Maret 2020",
+                          statTglCetak(surats[index].noSurat, surats[index].tanggalSurat),
                           style: TextStyle(
                             fontWeight: FontWeight.w300,
                             fontFamily: 'Montserrat',
@@ -131,6 +138,234 @@ class _HistoryLetterState extends State<HistoryLetter> {
         ),
       )
     );
+  }
+
+  String statSurat(String noSurat){
+    if(noSurat == "-"){
+      return "Belum Dicetak";
+    }else{
+      return "Sudah Dicetak";
+    }
+  }
+  
+  String statTglCetak(String noSurat, String tgl){
+    if(noSurat == "-"){
+      return "-";
+    }else{
+      return tgl;
+    }
+  }
+
+  Widget statOptionCard(String noSurat){
+    if(noSurat == "-"){
+      return IconButton(
+        icon: Icon(Icons.more_vert, color: Colors.black45), 
+        onPressed: (){
+          print("More Pressed");
+        }
+      );
+    }else{
+      return SizedBox.shrink();
+    }
+  }
+
+  void setPref() async{
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    setState(() {  
+      idWarga = prefs.getString("idWarga");
+    });
+    getData();
+  }
+
+  Widget showList(){
+    return ListView.builder(
+      itemCount: surats.length,
+      itemBuilder: (context, index){
+        return detail(index);
+      }
+    );
+  }
+
+  void getData() async{
+    try{
+      
+      setState(() {
+        isLoading = true;
+      });
+
+      Map<String,String> header = {
+        "x-api-key": "5baa441c93eaa4d6fb824dfc561a96d6",
+        "Content-Type": "application/x-www-form-urlencoded"};
+
+      String formURI = "https://www.terraciv.me/api/get_warga_surat";
+      Map<String, Object> body = {"id_warga" : idWarga };
+
+      http.Response data = await http.post(formURI, body: body, headers: header).timeout(
+        Duration(seconds: 300),
+        onTimeout: (){
+          setState(() {
+            isLoading = false;
+          });
+
+          Fluttertoast.showToast(
+            msg: "Timeout Koneksi",
+            toastLength: Toast.LENGTH_LONG,
+            gravity: ToastGravity.BOTTOM
+          );
+
+          return null;
+        }
+      );
+
+      setState(() {
+        isLoading = false;
+      });
+      
+      if(data != null){
+        if(data.statusCode == 200){
+          var suratRaw = jsonDecode(data.body) as List;
+          setState(() {
+            surats = suratRaw.map((suratJson) => Surat.fromJson(suratJson)).toList();
+          });
+        }
+      }
+
+    }catch(e){
+      print(e);
+      setState(() {
+        isLoading = false;
+      });
+
+      Fluttertoast.showToast(
+        msg: e.toString(),
+        toastLength: Toast.LENGTH_LONG,
+        gravity: ToastGravity.BOTTOM
+      );
+    }
+  }
+
+  void detailLetter(int i, BuildContext context){
+    Surat sur = surats[i];
+    print(sur.noSurat);
+    Navigator.pushNamed(
+      context, 
+      "/home/history_letter/detail_letter",
+      arguments: Surat(sur.noSurat, sur.idSurat, sur.idPemohon, sur.idPencetak, sur.pencetak, sur.tipeSurat, sur.nama, sur.pemohon, sur.tempatLahir, sur.tanggalLahir, sur.agama, sur.kebangsaan, sur.statusPernikahan, sur.pekerjaan, sur.alamat, sur.jenisKelamin, sur.nik, sur.tanggalSurat, sur.atasNamaTTD, sur.jabatanTTD, sur.nipTTD)
+    );
+  }
+
+  Widget detail(int index){
+    return Card(
+      margin: EdgeInsets.all(10),
+      child: InkWell(
+        onTap: (){
+
+        },
+        child: Container(
+          margin: EdgeInsets.all(10),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: <Widget>[
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: <Widget>[
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: <Widget>[
+                      Text(
+                        surats[index].noSurat.toUpperCase(),
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontFamily: "Montserrat",
+                          fontWeight: FontWeight.w300
+                        ),
+                      ),
+                      SizedBox(height: 5),
+                      Text(
+                        surats[index].tipeSurat,
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontFamily: "Montserrat",
+                          fontWeight: FontWeight.w400
+                        ),
+                      ),
+                      SizedBox(height: 5),
+                    ],
+                  ),
+                  Column(
+                    children: <Widget>[
+                      statOptionCard(surats[index].noSurat)
+                    ],
+                  ),
+                ],
+              ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: <Widget>[
+                  Column(
+                    children: <Widget>[
+                      Text(
+                        statTglCetak(surats[index].noSurat, surats[index].tanggalSurat),
+                        style: TextStyle(
+                          fontSize: 13,
+                          fontFamily: "Montserrat",
+                          fontWeight: FontWeight.w100
+                        ),
+                      ),
+                    ],
+                  ),
+                  Column(
+                    children: <Widget>[
+                      Text(
+                        statSurat(surats[index].noSurat),
+                        style: TextStyle(
+                          fontSize: 13,
+                          fontFamily: "Montserrat",
+                          fontWeight: FontWeight.w100
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              )
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+}
+
+class Surat{
+  String noSurat, idSurat, idPemohon, idPencetak, pencetak, tipeSurat, nama;
+  String pemohon, tempatLahir, tanggalLahir, agama, kebangsaan, statusPernikahan;
+  String pekerjaan, alamat, jenisKelamin, nik, tanggalSurat, atasNamaTTD;
+  String jabatanTTD, nipTTD;
+
+  Surat(this.noSurat, this.idSurat, this.idPemohon, this.idPencetak, this.pencetak, 
+        this.tipeSurat,this.nama, this.pemohon, this.tempatLahir, this.tanggalLahir, 
+        this.agama, this.kebangsaan, this.statusPernikahan, this.pekerjaan, this.alamat,
+        this.jenisKelamin, this.nik, this.tanggalSurat, this.atasNamaTTD, this.jabatanTTD, 
+        this.nipTTD);
+
+  factory Surat.fromJson(dynamic json){
+    return Surat(json["nomor_surat"] as String, json["id_surat"] as String, 
+                json["id_pemohon"] as String, json["id_pencetak"] as String, 
+                json["pencetak"] as String, json["tipe_surat"] as String,
+                json["nama"] as String, json["pemohon"] as String, 
+                json["tempat_lahir"] as String, json["tanggal_lahir"] as String, 
+                json["agama"] as String, json["kebangsaan"] as String, 
+                json["status_pernikahan"] as String, json["pekerjaan"] as String, 
+                json["alamat"] as String, json["jenis_kelamin"] as String, 
+                json["nik"] as String, json["tanggal_surat"] as String, 
+                json["atas_nama_ttd"] as String, json["jabatan_ttd"] as String, 
+                json["nip_ttd"] as String);
+  }
+
+  @override
+  String toString() {
+    return '{ ${this.noSurat}, ${this.idSurat}, ${this.idPemohon}, ${this.idPencetak}, ${this.pencetak}, ${this.tipeSurat}, ${this.nama}, ${this.pemohon}, ${this.tempatLahir}, ${this.tanggalLahir}, ${this.agama}, ${this.kebangsaan}, ${this.statusPernikahan}, ${this.pekerjaan}, ${this.alamat}, ${this.jenisKelamin}, ${this.nik}, ${this.tanggalSurat}, ${this.atasNamaTTD}, ${this.jabatanTTD}, ${this.nipTTD} }';
   }
 
 }

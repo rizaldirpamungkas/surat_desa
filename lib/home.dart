@@ -9,6 +9,7 @@ class Home extends StatefulWidget {
 }
 
 class _HomeState extends State<Home> {
+  
   @override
   Widget build(BuildContext context) {
     return WillPopScope(
@@ -40,7 +41,6 @@ class _HomeState extends State<Home> {
       ),
     );
   }
-
 
   Widget actionButtonNotif(){
     return Container(

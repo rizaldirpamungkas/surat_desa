@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:surat_desa/detail_letter.dart';
 import 'package:surat_desa/login.dart';
 import 'new_letter.dart';
 import 'history_letter.dart';
@@ -18,25 +19,107 @@ class MyApp extends StatelessWidget {
       onGenerateRoute: (RouteSettings settings){
         switch (settings.name) {
           case '/':
-            return MaterialPageRoute(builder: (context) => Login());
+            return PageRouteBuilder(
+              pageBuilder: (context, animation, secondaryAnimation) => Login(), 
+            );
             break;
           case '/home':
-            return MaterialPageRoute(
-              builder: (context) => Home(),
+            return PageRouteBuilder(
+              pageBuilder: (context, animation, secondaryAnimation) => Home(),
+              transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                return ScaleTransition(
+                  scale: Tween<double>(
+                    begin: 0.0,
+                    end: 1.0,
+                  ).animate(
+                    CurvedAnimation(
+                      parent: animation,
+                      curve: Curves.fastOutSlowIn,
+                    ),
+                  ),
+                  child: child,
+                );
+              },
             );
             break;
           case '/home/new_letter':
-            return MaterialPageRoute(
-              builder: (context) => NewLetter(),
+            return PageRouteBuilder(
+              pageBuilder: (context, animation, secondaryAnimation) => NewLetter(),
+              transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                return ScaleTransition(
+                  scale: Tween<double>(
+                    begin: 0.0,
+                    end: 1.0,
+                  ).animate(
+                    CurvedAnimation(
+                      parent: animation,
+                      curve: Curves.fastOutSlowIn,
+                    ),
+                  ),
+                  child: child,
+                );
+              },
             );
             break;
           case '/home/history_letter':
-            return MaterialPageRoute(
-              builder: (context) => HistoryLetter(),
+            return PageRouteBuilder(
+              pageBuilder: (context, animation, secondaryAnimation) => HistoryLetter(),
+              transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                return ScaleTransition(
+                  scale: Tween<double>(
+                    begin: 0.0,
+                    end: 1.0,
+                  ).animate(
+                    CurvedAnimation(
+                      parent: animation,
+                      curve: Curves.fastOutSlowIn,
+                    ),
+                  ),
+                  child: child,
+                );
+              },
+            );
+            break;
+          case '/home/history_letter/detail_letter':
+            final Surat args = settings.arguments;
+            return PageRouteBuilder(
+              pageBuilder: (context, animation, secondaryAnimation) => DetailLetter(
+                surat: args
+              ),
+              transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                return ScaleTransition(
+                  scale: Tween<double>(
+                    begin: 0.0,
+                    end: 1.0,
+                  ).animate(
+                    CurvedAnimation(
+                      parent: animation,
+                      curve: Curves.fastOutSlowIn,
+                    ),
+                  ),
+                  child: child,
+                );
+              },
             );
             break;
           default:
-            return MaterialPageRoute(builder: (context) => Login());
+            return PageRouteBuilder(
+              pageBuilder: (context, animation, secondaryAnimation) => Login(),
+              transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                return ScaleTransition(
+                  scale: Tween<double>(
+                    begin: 0.0,
+                    end: 1.0,
+                  ).animate(
+                    CurvedAnimation(
+                      parent: animation,
+                      curve: Curves.fastOutSlowIn,
+                    ),
+                  ),
+                  child: child,
+                );
+              },
+            );
             break;
         }
       },
