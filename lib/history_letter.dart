@@ -67,82 +67,11 @@ class _HistoryLetterState extends State<HistoryLetter> {
     }
   }
 
-  Widget listCard(BuildContext context, int index){
-    return Card(
-      margin: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-      child: InkWell(
-        onTap: (){
-          detailLetter(index, context);
-        },
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: <Widget>[
-            ListTile(
-              leading: Column(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: <Widget>[
-                  Icon(
-                    Icons.book,
-                    size: 50,
-                    color: Colors.black38,
-                  ),
-                ],
-              ),
-              title: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: <Widget>[
-                  Text(
-                    surats[index].idSurat.toUpperCase(), 
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontFamily: 'Montserrat',
-                      color: Colors.black54,
-                      fontSize: 20,
-                    ),
-                  ),
-                  statOptionCard(surats[index].noSurat)
-                ],
-              ),
-              subtitle: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: <Widget>[
-                  Text(surats[index].tipeSurat),
-                  Container(
-                    margin: EdgeInsets.symmetric(vertical: 5),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: <Widget>[
-                        Text(
-                          statSurat(surats[index].noSurat),
-                          style: TextStyle(
-                            fontWeight: FontWeight.w300,
-                            fontFamily: 'Montserrat',
-                            color: Colors.black45
-                          )
-                        ),
-                        Text(
-                          statTglCetak(surats[index].noSurat, surats[index].tanggalSurat),
-                          style: TextStyle(
-                            fontWeight: FontWeight.w300,
-                            fontFamily: 'Montserrat',
-                            color: Colors.black45
-                          )
-                        ),
-                      ],
-                    ),
-                  )
-                ],
-              ),
-            )
-          ],
-        ),
-      )
-    );
-  }
-
   String statSurat(String noSurat){
     if(noSurat == "-"){
       return "Belum Dicetak";
+    }else if(noSurat == "batal"){
+      return "Dibatalkan";
     }else{
       return "Sudah Dicetak";
     }
@@ -156,16 +85,44 @@ class _HistoryLetterState extends State<HistoryLetter> {
     }
   }
 
-  Widget statOptionCard(String noSurat){
+  Widget statOptionCard(String noSurat, BuildContext context, int index){
     if(noSurat == "-"){
-      return IconButton(
-        icon: Icon(Icons.more_vert, color: Colors.black45), 
-        onPressed: (){
-          print("More Pressed");
-        }
+      return PopupMenuButton(
+        itemBuilder: (context){
+          return [
+            PopupMenuItem(
+              value: "Edit",
+              child: Text(
+                "Edit"
+              )
+            ),
+            PopupMenuItem(
+              value: "Batalkan",
+              child: Text(
+                "Batalkan"
+              )
+            ),
+          ];
+        },
+        elevation: 4,
+        onSelected: (val){
+          if(val == "Edit"){
+            editLetter(index, context);
+          }else{
+            cancelLetter(index);
+          }
+        },
       );
     }else{
       return SizedBox.shrink();
+    }
+  }
+
+  String statNoSurat(String noSurat){
+    if(noSurat == "batal"){
+      return "-";
+    }else{
+      return noSurat.toUpperCase();
     }
   }
 
@@ -181,7 +138,7 @@ class _HistoryLetterState extends State<HistoryLetter> {
     return ListView.builder(
       itemCount: surats.length,
       itemBuilder: (context, index){
-        return detail(index);
+        return detail(context, index);
       }
     );
   }
@@ -246,20 +203,89 @@ class _HistoryLetterState extends State<HistoryLetter> {
 
   void detailLetter(int i, BuildContext context){
     Surat sur = surats[i];
-    print(sur.noSurat);
+    print(sur.idSurat);
     Navigator.pushNamed(
       context, 
       "/home/history_letter/detail_letter",
       arguments: Surat(sur.noSurat, sur.idSurat, sur.idPemohon, sur.idPencetak, sur.pencetak, sur.tipeSurat, sur.nama, sur.pemohon, sur.tempatLahir, sur.tanggalLahir, sur.agama, sur.kebangsaan, sur.statusPernikahan, sur.pekerjaan, sur.alamat, sur.jenisKelamin, sur.nik, sur.tanggalSurat, sur.atasNamaTTD, sur.jabatanTTD, sur.nipTTD)
     );
   }
+  
+  void editLetter(int i, BuildContext context) async{
+    Surat sur = surats[i];
+    
+    var stat = await Navigator.pushNamed(
+      context, 
+      "/home/history_letter/edit_letter",
+      arguments: Surat(sur.noSurat, sur.idSurat, sur.idPemohon, sur.idPencetak, sur.pencetak, sur.tipeSurat, sur.nama, sur.pemohon, sur.tempatLahir, sur.tanggalLahir, sur.agama, sur.kebangsaan, sur.statusPernikahan, sur.pekerjaan, sur.alamat, sur.jenisKelamin, sur.nik, sur.tanggalSurat, sur.atasNamaTTD, sur.jabatanTTD, sur.nipTTD)
+    );
 
-  Widget detail(int index){
+    if(stat){
+      setPref();
+    }
+  }
+
+  void cancelLetter(int i) async{
+    try{
+      
+      setState(() {
+        isLoading = true;
+      });
+
+      Map<String,String> header = {
+        "x-api-key": "5baa441c93eaa4d6fb824dfc561a96d6",
+        "Content-Type": "application/x-www-form-urlencoded"};
+
+      String formURI = "https://www.terraciv.me/api/cancel_surat";
+      Map<String, Object> body = {"id_surat" : surats[i].idSurat};
+
+      http.Response data = await http.post(formURI, body: body, headers: header).timeout(
+        Duration(seconds: 300),
+        onTimeout: (){
+          setState(() {
+            isLoading = false;
+          });
+
+          Fluttertoast.showToast(
+            msg: "Timeout Koneksi",
+            toastLength: Toast.LENGTH_LONG,
+            gravity: ToastGravity.BOTTOM
+          );
+
+          return null;
+        }
+      );
+
+      setState(() {
+        isLoading = false;
+      });
+      
+      if(data != null){
+        if(data.statusCode == 200){
+          getData();
+        }
+      }
+
+    }catch(e){
+      print(e);
+      setState(() {
+        isLoading = false;
+      });
+
+      Fluttertoast.showToast(
+        msg: e.toString(),
+        toastLength: Toast.LENGTH_LONG,
+        gravity: ToastGravity.BOTTOM
+      );
+    }
+  }
+
+  Widget detail(BuildContext context, int index){
     return Card(
       margin: EdgeInsets.all(10),
       child: InkWell(
         onTap: (){
-
+          detailLetter(index, context);
         },
         child: Container(
           margin: EdgeInsets.all(10),
@@ -273,7 +299,7 @@ class _HistoryLetterState extends State<HistoryLetter> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: <Widget>[
                       Text(
-                        surats[index].noSurat.toUpperCase(),
+                        statNoSurat(surats[index].noSurat),
                         style: TextStyle(
                           fontSize: 16,
                           fontFamily: "Montserrat",
@@ -294,7 +320,7 @@ class _HistoryLetterState extends State<HistoryLetter> {
                   ),
                   Column(
                     children: <Widget>[
-                      statOptionCard(surats[index].noSurat)
+                      statOptionCard(surats[index].noSurat, context, index)
                     ],
                   ),
                 ],

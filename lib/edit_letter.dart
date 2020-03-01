@@ -1,23 +1,31 @@
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'package:intl/intl.dart';
+import 'history_letter.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:http/http.dart' as http;
+import 'dart:convert';
+import 'package:intl/intl.dart';
 
-class NewLetter extends StatefulWidget {
+
+class EditLetter extends StatefulWidget {
+
+  final Surat surat;
+
+  EditLetter({
+    Key key,
+    @required this.surat
+  }) : super(key: key);
+
   @override
-  _NewLetterState createState() => _NewLetterState();
+  _EditLetterState createState() => _EditLetterState(surat);
 }
 
-class _NewLetterState extends State<NewLetter> {
+class _EditLetterState extends State<EditLetter> {
 
   final formKey = new GlobalKey<FormState>();
 
-  String letterType = "Surat Baru";
-  String letterCode = "ket_pergi";
-  Widget form;
-
-  bool isLoading = false;
+  final Surat surat;
+  bool isLoading = true;
+  Map<String,Object> suratRaw;
 
   String nama, tempatLahir, agama, kebangsaan, statNikah, tanggalLahir, idWarga;
   String pekerjaan, alamat, jenKel, nik;
@@ -37,49 +45,161 @@ class _NewLetterState extends State<NewLetter> {
   String jenisKegiatan, namaInstansiKegiatan, alamatInstansi, namaKades;
   String namaDesa, namaDusun, namaKadus;
 
+  _EditLetterState(this.surat);
+
   @override
   void initState() {
-    setPref();
-    setForm();
+    getData();
     super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
-    return fullBody();
+    return appBody();
+  }
+
+  void setDataGeneral(){
+    setState(() {
+      nama = suratRaw["nama"];
+      tempatLahir = suratRaw["tempat_lahir"]; 
+      agama = suratRaw["agama"];
+      alamat = suratRaw["alamat"];
+      kebangsaan = suratRaw["kebangsaan"];
+      statNikah = suratRaw["status_pernikahan"]; 
+      tanggalLahir = suratRaw["tanggal_lahir"];
+      pekerjaan = suratRaw["pekerjaan"]; 
+      jenKel = suratRaw["jenis_kelamin"];
+      nik = suratRaw["nik"];
+    });
+  }
+
+  void setDataSub(String tipeSurat){
+    switch (tipeSurat) {
+      case "Keterangan Berpergian":
+        setState(() {
+          daerahKeberadaan = suratRaw["daerah_keberadaan"]; 
+          tahunKepergian = suratRaw["tahun_kepergian"]; 
+        });
+        break;
+      case "Keterangan Cerai":
+        setState(() {
+          namaPasangan = suratRaw["nama_pasangan"]; 
+          tahunCerai = suratRaw["tahun_cerai"];
+          tempatCerai = suratRaw["tempat_cerai"];
+          statCerai = suratRaw["status_cerai"];
+        });
+        break;
+      case "Keterangan Kepemilikan Sepeda Motor":
+        setState(() {
+          nomorPolisi = suratRaw["nomor_polisi"];
+          merk = suratRaw["merk"];
+          tipe = suratRaw["tipe"];
+          jenis = suratRaw["jenis"];
+          tahunBuat = suratRaw["tahun_pembuatan"];
+          tahunRakit = suratRaw["tahun_perakitan"];
+          isiSilinder = suratRaw["isi_silinder"];
+          warnaKendaraan = suratRaw["warna"];
+          nomorRangka = suratRaw["nomor_rangka"];
+          nomorMesin = suratRaw["nomor_mesin"];
+          nomorBPKB = suratRaw["nomor_bpkb"];
+          atasNamaBPKB = suratRaw["atas_nama_bpkb"];
+        });
+        break;
+      case "Keterangan Bebas Pajak":
+        setState(() {
+          objekPajak = suratRaw["objek_pajak"];
+        });
+        break;
+      case "Keterangan Beda Nama":
+        setState(() {
+          objekSalahNama = suratRaw["objek_salah_nama"];
+          namaObjekSalahNama = suratRaw["nama_objek_salah_nama"];
+          tanggalLahirSalah = suratRaw["tanggal_lahir_objek_salah_nama"];
+          tempatLahirSalah = suratRaw["tempat_lahir_objek_salah_nama"];
+          jenKelSalah = suratRaw["jenis_kelamin_objek_salah_nama"];
+          alamatSalah = suratRaw["alamat_objek_salah_nama"];
+        });
+        break;
+      case "Keterangan Kehilangan":
+        setState(() {
+          objekHilang = suratRaw["objek_hilang"];
+          tempatHilang = suratRaw["tempat_hilang"];
+          tanggalHilang = suratRaw["tanggal_hilang"];
+        });
+        break;
+      case "Keterangan Telah Menikah":
+        setState(() {
+          namaPasangan = suratRaw["nama_pasangan"];
+          tanggalLahirPasangan = suratRaw["tanggal_lahir_pasangan"];
+          tanggalNikah = suratRaw["tanggal_nikah"];
+          kebangsaanPasangan = suratRaw["kebangsaan_pasangan"];
+          tempatMenikah = suratRaw["tempat_nikah"];
+          tempatLahirPasangan = suratRaw["tempat_lahir_pasangan"];
+          agamaPasangan = suratRaw["agama_pasangan"];
+          pekerjaanPasangan = suratRaw["pekerjaan_pasangan"];
+          alamatPasangan = suratRaw["alamat_pasangan"];
+        });
+        break;
+      case "Pertanggungjawaban Orang Tua":
+        setState(() {
+          jenKelAnak = suratRaw["jenis_kelamin_anak"];
+          kebangsaanAnak =  suratRaw["kebangsaan_anak"];
+          hubunganOrtu = suratRaw["hubungan_ortu_dengan_anak"];
+          tanggalLahirAnak = suratRaw["tanggal_lahir_anak"];
+          namaAnak =  suratRaw["nama_anak"];
+          tempatLahirAnak = suratRaw["tempat_lahir_anak"];
+          agamaAnak = suratRaw["agama_anak"];
+          pekerjaanAnak = suratRaw["pekerjaan_anak"];
+          alamatAnak = suratRaw["alamat_anak"];
+          jenisKegiatan = suratRaw["jenis_kegiatan"];
+          namaInstansiKegiatan = suratRaw["nama_instansi_kegiatan"];
+          alamatInstansi = suratRaw["alamat_instansi"];
+          namaKades = suratRaw["nama_kades"];
+          namaDesa = suratRaw["nama_desa"];
+          namaDusun = suratRaw["nama_dusun"];
+          namaKadus = suratRaw["nama_kadus"];
+        });
+        break;
+    }
+  }
+
+  Widget appBody(){
+    return WillPopScope(
+      onWillPop: (){
+        Navigator.pop(context,false);
+        return Future.value(true);
+      },
+      child: Scaffold(
+        appBar: AppBar(
+          title: Text("Edit Surat"),
+          iconTheme: IconThemeData(
+            color: Colors.white
+          ),
+          textTheme: TextTheme(
+            title: TextStyle(
+              fontSize: 20
+            )
+          ),
+          actions: <Widget>[
+            IconButton(
+              icon: Icon(Icons.done),
+              onPressed: (){
+                validateAndSubmit();
+              },
+            )
+          ],
+        ),
+        body: fullBody(),
+      ),
+    );
   }
 
   Widget fullBody(){
     return Stack( 
       children: <Widget>[
-        appBody(),
+        showForm(),
         loadingScreen()
       ],
-    );
-  }
-
-  Widget appBody(){
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(letterType),
-        iconTheme: IconThemeData(
-          color: Colors.white
-        ),
-        textTheme: TextTheme(
-          title: TextStyle(
-            fontSize: 20
-          )
-        ),
-        actions: <Widget>[
-          IconButton(
-            icon: Icon(Icons.done),
-            onPressed: (){
-              validateAndSubmit();
-            },
-          )
-        ],
-      ),
-      body: showForm(),
     );
   }
 
@@ -98,6 +218,90 @@ class _NewLetterState extends State<NewLetter> {
     }
   }
 
+  void getData() async{
+    try{
+      
+      setState(() {
+        isLoading = true;
+      });
+
+      Map<String,String> header = {
+        "x-api-key": "5baa441c93eaa4d6fb824dfc561a96d6",
+        "Content-Type": "application/x-www-form-urlencoded"};
+
+      String formURI = "https://www.terraciv.me/api/get_detail_surat";
+      Map<String, Object> body = {"tipe" : surat.tipeSurat, "id_surat": surat.idSurat};
+
+      http.Response data = await http.post(formURI, body: body, headers: header).timeout(
+        Duration(seconds: 300),
+        onTimeout: (){
+          setState(() {
+            isLoading = false;
+          });
+
+          Fluttertoast.showToast(
+            msg: "Timeout Koneksi",
+            toastLength: Toast.LENGTH_LONG,
+            gravity: ToastGravity.BOTTOM
+          );
+
+          Navigator.pop(context);
+
+          return null;
+        }
+      );
+
+      setState(() {
+        isLoading = false;
+      });
+      
+      if(data != null){
+        if(data.statusCode == 200){
+          print(data.body);
+          setState(() {
+            suratRaw = jsonDecode(data.body);
+            setDataGeneral();
+            setDataSub(surat.tipeSurat);
+          });
+        }
+      }
+
+    }catch(e){
+      print(e);
+      setState(() {
+        isLoading = false;
+      });
+
+      Fluttertoast.showToast(
+        msg: e.toString(),
+        toastLength: Toast.LENGTH_LONG,
+        gravity: ToastGravity.BOTTOM
+      );
+    }
+  }
+
+  bool validateAndSave() {
+    final form = formKey.currentState;
+    if (form.validate()) {
+      form.save();
+      return true;
+    }
+    return false;
+  }
+
+  void validateAndSubmit() {
+    FocusScope.of(context).unfocus();
+
+    if (validateAndSave()) {
+      setState(() {
+        // errorMessage = "";
+        isLoading = true;
+      });
+      print("OK");
+      setData();
+    }
+  }
+
   Widget showForm(){
     return Form(
       key: formKey,
@@ -105,160 +309,42 @@ class _NewLetterState extends State<NewLetter> {
         padding: const EdgeInsets.symmetric(vertical: 5),
         child: ListView(
           children: <Widget>[
-            showFormChooseLet(),
             showFormGeneral(),
-            form
+            formSubSurat(surat.tipeSurat)
           ],
         ),
       )
     );
   }
 
-  void setForm(){
-    
-    switch (letterCode) {
-      case "ket_pergi":
-        setState(() {
-          letterType = "Keterangan Berpergian";
-          form = formBerpergian();
-        });
+  Widget formSubSurat(tipeSurat){
+    switch (tipeSurat) {
+      case "Keterangan Berpergian":
+        return formBerpergian();
         break;
-      
-      case "ket_kelakuan": 
-        setState(() {
-          letterType = "Keterangan Berkelakuan Baik";
-          form = SizedBox.shrink();
-        });
+      case "Keterangan Cerai":
+        return formKeteranganCerai();
         break;
-
-      case "ket_cerai":
-        setState(() {
-          letterType = "Keterangan Cerai";
-          form = formKeteranganCerai();
-        });
+      case "Keterangan Kepemilikan Sepeda Motor":
+        return formKepMotor();
         break;
-
-      case "kep_motor":
-        setState(() {
-          letterType = "Keterangan Kepemilikan Sepeda Motor";
-          form = formKepMotor();
-        });
+      case "Keterangan Bebas Pajak":
+        return formBebasPajak();
         break;
-
-      case "ket_pajak":
-        setState(() {
-          letterType = "Keterangan Bebas Pajak";
-          form = formBebasPajak();
-        });
+      case "Keterangan Beda Nama":
+        return formSalahNama();
         break;
-
-      case "ket_bed_nama":
-        setState(() {
-          letterType = "Keterangan Beda Nama";
-          form = formSalahNama();
-        });
+      case "Keterangan Kehilangan":
+        return formKeteranganHilang();
         break;
-
-      case "ket_hilang":
-        setState(() {
-          letterType = "Keterangan Kehilangan";
-          form = formKeteranganHilang();
-        });
+      case "Keterangan Telah Menikah":
+        return formKeteranganNikah();
         break;
-
-      case "ket_nikah":
-        setState(() {
-          letterType = "Keterangan Telah Menikah";
-          form = formKeteranganNikah();
-        });
+      case "Pertanggungjawaban Orang Tua":
+        return formTanggungJawabOrtu();
         break;
-
-      case "tang_ortu":
-        setState(() {
-          letterType = "Pertanggungjawaban Orang Tua";
-          form = formTanggungJawabOrtu();
-        });
-        break;
-
-      default:
+      default: return SizedBox.shrink();
     }
-  }
-
-  Widget showFormChooseLet(){
-    List<DropdownMenuItem> items;
-
-    items = [
-      DropdownMenuItem(
-        value: "ket_pergi",
-        child: Text("Keterangan Berpergian"),
-      ),
-      DropdownMenuItem(
-        value: "ket_kelakuan",
-        child: Text("Keterangan Berkelakuan Baik"),
-      ),
-      DropdownMenuItem(
-        value: "ket_cerai",
-        child: Text("Keterangan Cerai"),
-      ),
-      DropdownMenuItem(
-        value: "kep_motor",
-        child: Text("Keterangan Kepemilikan Sepeda Motor"),
-      ),
-      DropdownMenuItem(
-        value: "ket_pajak",
-        child: Text("Keterangan Bebas Pajak"),
-      ),
-      DropdownMenuItem(
-        value: "ket_bed_nama",
-        child: Text("Keterangan Beda Nama"),
-      ),
-      DropdownMenuItem(
-        value: "ket_hilang",
-        child: Text("Keterangan Kehilangan"),
-      ),
-      DropdownMenuItem(
-        value: "ket_nikah",
-        child: Text("Keterangan Telah Menikah"),
-      ),
-      DropdownMenuItem(
-        value: "tang_ortu",
-        child: Text("Pertanggungjawaban Orang Tua"),
-      ),
-    ];
-    
-    return ListTile(
-      leading: Icon(Icons.pageview),
-      title: DropdownButton(
-        isExpanded: true,
-        hint: Text("Jenis Surat"),
-        value: letterCode,
-        items: items,
-        onChanged: (val){
-          setState(() {
-            letterCode = val;
-            setForm();
-          });
-        },
-      )
-    );
-  
-  }
-
-  void setPref() async{
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    setState(() {  
-      nama = prefs.getString("namaWarga");
-      tempatLahir = prefs.getString("tempatLahir");
-      tanggalLahir = prefs.getString("tanggalLahir");
-      agama = prefs.getString("agama");
-      kebangsaan = prefs.getString("kebangsaan");
-      statNikah = prefs.getString("statusPernikahan");
-      pekerjaan = prefs.getString("pekerjaan");
-      alamat = prefs.getString("alamat");
-      jenKel = prefs.getString("jenisKelamin");
-      nik = prefs.getString("nik");
-      idWarga = prefs.getString("idWarga");
-    });
   }
 
   Widget showFormGeneral(){
@@ -468,30 +554,6 @@ class _NewLetterState extends State<NewLetter> {
     );
   }
 
-  bool validateAndSave() {
-    final form = formKey.currentState;
-    if (form.validate()) {
-      form.save();
-      return true;
-    }
-    return false;
-  }
-
-  void validateAndSubmit() {
-    setForm();
-
-    FocusScope.of(context).unfocus();
-
-    if (validateAndSave()) {
-      setState(() {
-        // errorMessage = "";
-        isLoading = true;
-      });
-      print("OK");
-      setGeneralData();
-    }
-  }
-
   Widget formKeteranganNikah(){
     return Column(
       children: <Widget>[
@@ -556,7 +618,6 @@ class _NewLetterState extends State<NewLetter> {
               ).then((val){
                 setState(() {
                   tanggalLahirPasangan = DateFormat("yyyy-MM-dd").format(val);
-                  setForm();
                 });
               });
             },
@@ -601,7 +662,6 @@ class _NewLetterState extends State<NewLetter> {
             onChanged: (val){
               setState(() {  
                 kebangsaanPasangan = val;
-                setForm();
               });
             },
           ),
@@ -667,7 +727,6 @@ class _NewLetterState extends State<NewLetter> {
               ).then((val){
                 setState(() {
                   tanggalNikah = DateFormat("yyyy-MM-dd").format(val);
-                  setForm();
                 });
               });
             },
@@ -709,11 +768,6 @@ class _NewLetterState extends State<NewLetter> {
               helperText: "Nama Anak"
             ),
             controller: TextEditingController(text: namaAnak),
-            onChanged: (val){ 
-              setState(() {
-                namaAnak = val;
-              });
-            },
             validator: (val) => val.isEmpty ? "Kolom harus diisi" : null,
             onSaved: (val) => namaAnak = val,
           ),
@@ -727,11 +781,6 @@ class _NewLetterState extends State<NewLetter> {
               helperText: "Tempat Kelahiran Anak",
             ),
             controller: TextEditingController(text: tempatLahirAnak),
-            onChanged: (val){ 
-              setState(() {
-                tempatLahirAnak = val;
-              });
-            },
             validator: (val) => val.isEmpty ? "Kolom harus diisi" : null,
             onSaved: (val) => tempatLahirAnak = val,
           ),
@@ -761,13 +810,7 @@ class _NewLetterState extends State<NewLetter> {
               ).then((val){
                 setState(() {
                   tanggalLahirAnak = DateFormat("yyyy-MM-dd").format(val);
-                  setForm();
                 });
-              });
-            },
-            onChanged: (val){ 
-              setState(() {
-                tanggalLahirAnak = val;
               });
             },
             validator: (val) => val.isEmpty ? "Kolom harus diisi" : null,
@@ -791,9 +834,8 @@ class _NewLetterState extends State<NewLetter> {
               ),
             ],
             onChanged: (val){
-              setState(() {  
+              setState(() {
                 jenKelAnak = val;
-                setForm();
               });
             },
           )
@@ -807,11 +849,6 @@ class _NewLetterState extends State<NewLetter> {
               helperText: "Agama Anak",
             ),
             controller: TextEditingController(text: agamaAnak),
-            onChanged: (val){ 
-              setState(() {
-                agamaAnak = val;
-              });
-            },
             validator: (val) => val.isEmpty ? "Kolom harus diisi" : null,
             onSaved: (val) => agamaAnak = val,
           ),
@@ -833,9 +870,8 @@ class _NewLetterState extends State<NewLetter> {
               ),
             ],
             onChanged: (val){
-              setState(() {  
+              setState(() {
                 kebangsaanAnak = val;
-                setForm();
               });
             },
           ),
@@ -849,11 +885,6 @@ class _NewLetterState extends State<NewLetter> {
               helperText: "Pekerjaan Anak",
             ),
             controller: TextEditingController(text: pekerjaanAnak),
-            onChanged: (val){ 
-              setState(() {
-                pekerjaanAnak = val;
-              });
-            },
             validator: (val) => val.isEmpty ? "Kolom harus diisi" : null,
             onSaved: (val) => pekerjaanAnak = val,
           ),
@@ -867,11 +898,6 @@ class _NewLetterState extends State<NewLetter> {
               helperText: "Alamat Anak",
             ),
             controller: TextEditingController(text: alamatAnak),
-            onChanged: (val){ 
-              setState(() {
-                alamatAnak = val;
-              });
-            },
             validator: (val) => val.isEmpty ? "Kolom harus diisi" : null,
             onSaved: (val) => alamatAnak = val,
           ),
@@ -885,11 +911,6 @@ class _NewLetterState extends State<NewLetter> {
               helperText: "Jenis Kegiatan",
             ),
             controller: TextEditingController(text: jenisKegiatan),
-            onChanged: (val){ 
-              setState(() {
-                jenisKegiatan = val;
-              });
-            },
             validator: (val) => val.isEmpty ? "Kolom harus diisi" : null,
             onSaved: (val) => jenisKegiatan = val,
           ),
@@ -903,11 +924,6 @@ class _NewLetterState extends State<NewLetter> {
               helperText: "Nama Instansi Kegiatan",
             ),
             controller: TextEditingController(text: namaInstansiKegiatan),
-            onChanged: (val){ 
-              setState(() {
-                namaInstansiKegiatan = val;
-              });
-            },
             validator: (val) => val.isEmpty ? "Kolom harus diisi" : null,
             onSaved: (val) => namaInstansiKegiatan = val,
           ),
@@ -921,11 +937,6 @@ class _NewLetterState extends State<NewLetter> {
               helperText: "Alamat Instansi",
             ),
             controller: TextEditingController(text: alamatInstansi),
-            onChanged: (val){ 
-              setState(() {
-                alamatInstansi= val;
-              });
-            },
             validator: (val) => val.isEmpty ? "Kolom harus diisi" : null,
             onSaved: (val) => alamatInstansi = val,
           ),
@@ -951,9 +962,8 @@ class _NewLetterState extends State<NewLetter> {
               ),
             ],
             onChanged: (val){
-              setState(() {  
+              setState(() {
                 hubunganOrtu = val;
-                setForm();
               });
             },
           ),
@@ -967,11 +977,6 @@ class _NewLetterState extends State<NewLetter> {
               helperText: "Nama Kepala Desa",
             ),
             controller: TextEditingController(text: namaKades),
-            onChanged: (val){ 
-              setState(() {
-                namaKades = val;
-              });
-            },
             validator: (val) => val.isEmpty ? "Kolom harus diisi" : null,
             onSaved: (val) => namaKades = val,
           ),
@@ -985,11 +990,6 @@ class _NewLetterState extends State<NewLetter> {
               helperText: "Nama Desa",
             ),
             controller: TextEditingController(text: namaDesa),
-            onChanged: (val){ 
-              setState(() {
-                namaDesa = val;
-              });
-            },
             validator: (val) => val.isEmpty ? "Kolom harus diisi" : null,
             onSaved: (val) => namaDesa = val,
           ),
@@ -1003,11 +1003,6 @@ class _NewLetterState extends State<NewLetter> {
               helperText: "Nama Dusun",
             ),
             controller: TextEditingController(text: namaDusun),
-            onChanged: (val){ 
-              setState(() {
-                namaDusun = val;
-              });
-            },
             validator: (val) => val.isEmpty ? "Kolom harus diisi" : null,
             onSaved: (val) => namaDusun = val,
           ),
@@ -1021,11 +1016,6 @@ class _NewLetterState extends State<NewLetter> {
               helperText: "Nama Kepala Dusun",
             ),
             controller: TextEditingController(text: namaKadus),
-            onChanged: (val){ 
-              setState(() {
-                namaKadus = val;
-              });
-            },
             validator: (val) => val.isEmpty ? "Kolom harus diisi" : null,
             onSaved: (val) => namaKadus = val,
           ),
@@ -1043,11 +1033,6 @@ class _NewLetterState extends State<NewLetter> {
             maxLines: 1,
             textCapitalization: TextCapitalization.words,
             controller: TextEditingController(text: daerahKeberadaan),
-            onChanged: (val){ 
-              setState(() {
-                daerahKeberadaan = val;
-              });
-            },
             validator: (val) => val.isEmpty ? "Kolom harus diisi" : null,
             onSaved: (val) => daerahKeberadaan = val,
             decoration: InputDecoration(
@@ -1065,11 +1050,6 @@ class _NewLetterState extends State<NewLetter> {
               helperText: "Tahun Kepergian",
             ),
             controller: TextEditingController(text: tahunKepergian),
-            onChanged: (val){ 
-              setState(() {
-                tahunKepergian = val;
-              });
-            },
             validator: (val) => val.isEmpty ? "Kolom harus diisi" : null,
             onSaved: (val) => tahunKepergian = val,
           )
@@ -1090,11 +1070,6 @@ class _NewLetterState extends State<NewLetter> {
               helperText: "Objek Bebas Pajak",
             ),
             controller: TextEditingController(text: objekPajak),
-            onChanged: (val){ 
-              setState(() {
-                objekPajak = val;
-              });
-            },
             validator: (val) => val.isEmpty ? "Kolom harus diisi" : null,
             onSaved: (val) => objekPajak = val,
           )
@@ -1124,9 +1099,8 @@ class _NewLetterState extends State<NewLetter> {
               ),
             ],
             onChanged: (val){
-              setState(() {  
+              setState(() {
                 statCerai = val;
-                setForm();
               });
             },
             onSaved: (val) => statCerai = val,
@@ -1144,11 +1118,6 @@ class _NewLetterState extends State<NewLetter> {
             decoration: InputDecoration(
               helperText: "Nama Pasangan",
             ),
-            onChanged: (val){
-              setState(() {
-                namaPasangan = val; 
-              });
-            },
             validator: (val) => val.isEmpty ? "Kolom harus diisi" : null,
             onSaved: (val) => namaPasangan = val,
           )
@@ -1165,11 +1134,6 @@ class _NewLetterState extends State<NewLetter> {
             decoration: InputDecoration(
               helperText: "Tahun Cerai",
             ),
-            onChanged: (val){
-              setState(() {
-                tahunCerai = val;
-              });
-            },
             validator: (val) => val.toString().isEmpty ? "Kolom harus diisi" : null,
             onSaved: (val) => tahunCerai = val,
           )
@@ -1185,11 +1149,6 @@ class _NewLetterState extends State<NewLetter> {
             decoration: InputDecoration(
               helperText: "Tempat Cerai",
             ),
-            onChanged: (val){
-              setState(() {
-                tempatCerai = val;
-              });
-            },
             validator: (val) => val.isEmpty ? "Kolom harus diisi" : null,
             onSaved: (val) => tempatCerai = val,
           )
@@ -1210,11 +1169,6 @@ class _NewLetterState extends State<NewLetter> {
               helperText: "Objek Hilang",
             ),
             controller: TextEditingController(text: objekHilang),
-            onChanged: (val){ 
-              setState(() {
-                objekHilang = val;
-              });
-            },
             validator: (val) => val.isEmpty ? "Kolom harus diisi" : null,
             onSaved: (val) => objekHilang = val,
           )
@@ -1228,11 +1182,6 @@ class _NewLetterState extends State<NewLetter> {
               helperText: "Tempat Hilang",
             ),
             controller: TextEditingController(text: tempatHilang),
-            onChanged: (val){ 
-              setState(() {
-                tempatHilang = val;
-              });
-            },
             validator: (val) => val.isEmpty ? "Kolom harus diisi" : null,
             onSaved: (val) => tempatHilang = val,
           )
@@ -1262,7 +1211,6 @@ class _NewLetterState extends State<NewLetter> {
               ).then((val){
                 setState(() {
                   tanggalHilang = DateFormat("yyyy-MM-dd").format(val);
-                  setForm();
                 });
               });
             },
@@ -1286,11 +1234,6 @@ class _NewLetterState extends State<NewLetter> {
               helperText: "Objek Salah Nama",
             ),
             controller: TextEditingController(text: objekSalahNama),
-            onChanged: (val){ 
-              setState(() {
-                objekSalahNama = val;
-              });
-            },
             validator: (val) => val.isEmpty ? "Kolom harus diisi" : null,
             onSaved: (val) => objekSalahNama = val,
           )
@@ -1304,11 +1247,6 @@ class _NewLetterState extends State<NewLetter> {
               helperText: "Nama di Objek Salah Nama",
             ),
             controller: TextEditingController(text: namaObjekSalahNama),
-            onChanged: (val){ 
-              setState(() {
-                namaObjekSalahNama = val;
-              });
-            },
             validator: (val) => val.isEmpty ? "Kolom harus diisi" : null,
             onSaved: (val) => namaObjekSalahNama = val,
           )
@@ -1338,7 +1276,6 @@ class _NewLetterState extends State<NewLetter> {
               ).then((val){
                 setState(() {
                   tanggalLahirSalah = DateFormat("yyyy-MM-dd").format(val);
-                  setForm();
                 });
               });
             },
@@ -1355,11 +1292,6 @@ class _NewLetterState extends State<NewLetter> {
               helperText: "Tempat Lahir di Objek Salah Nama",
             ),
             controller: TextEditingController(text: tempatLahirSalah),
-            onChanged: (val){ 
-              setState(() {
-                tempatLahirSalah = val;
-              });
-            },
             validator: (val) => val.isEmpty ? "Kolom harus diisi" : null,
             onSaved: (val) => tempatLahirSalah = val,
           )
@@ -1381,9 +1313,8 @@ class _NewLetterState extends State<NewLetter> {
               ),
             ],
             onChanged: (val){
-              setState(() {  
+              setState(() {
                 jenKelSalah = val;
-                setForm();
               });
             },
           )
@@ -1397,11 +1328,6 @@ class _NewLetterState extends State<NewLetter> {
               helperText: "Alamat di Objek Salah Nama",
             ),
             controller: TextEditingController(text: alamatSalah),
-            onChanged: (val){ 
-              setState(() {
-                alamatSalah = val;
-              });
-            },
             validator: (val) => val.isEmpty ? "Kolom harus diisi" : null,
             onSaved: (val) => alamatSalah = val,
           ),
@@ -1422,11 +1348,6 @@ class _NewLetterState extends State<NewLetter> {
               helperText: "Nomor Polisi",
             ),
             controller: TextEditingController(text: nomorPolisi),
-            onChanged: (val){ 
-              setState(() {
-                nomorPolisi = val;
-              });
-            },
             validator: (val) => val.isEmpty ? "Kolom harus diisi" : null,
             // onSaved: (val) => nomorPolisi = val,
           )
@@ -1440,11 +1361,6 @@ class _NewLetterState extends State<NewLetter> {
               helperText: "Merk",
             ),
             controller: TextEditingController(text: merk),
-            onChanged: (val){ 
-              setState(() {
-                merk = val;
-              });
-            },
             validator: (val) => val.isEmpty ? "Kolom harus diisi" : null,
             onSaved: (val) => merk = val,
           )
@@ -1458,11 +1374,6 @@ class _NewLetterState extends State<NewLetter> {
               helperText: "Tipe",
             ),
             controller: TextEditingController(text: tipe),
-            onChanged: (val){ 
-              setState(() {
-                tipe = val;
-              });
-            },
             validator: (val) => val.isEmpty ? "Kolom harus diisi" : null,
             onSaved: (val) => tipe = val,
           )
@@ -1476,11 +1387,6 @@ class _NewLetterState extends State<NewLetter> {
               helperText: "Jenis",
             ),
             controller: TextEditingController(text: jenis),
-            onChanged: (val){ 
-              setState(() {
-                jenis = val;
-              });
-            },
             validator: (val) => val.isEmpty ? "Kolom harus diisi" : null,
             onSaved: (val) => jenis = val,
           )
@@ -1495,11 +1401,6 @@ class _NewLetterState extends State<NewLetter> {
               helperText: "Tahun Pembuatan",
             ),
             controller: TextEditingController(text: tahunBuat),
-            onChanged: (val){ 
-              setState(() {
-                tahunBuat = val;
-              });
-            },
             validator: (val) => val.isEmpty ? "Kolom harus diisi" : null,
             onSaved: (val) => tahunBuat = val,
           )
@@ -1514,11 +1415,6 @@ class _NewLetterState extends State<NewLetter> {
               helperText: "Tahun Perakitan",
             ),
             controller: TextEditingController(text: tahunRakit),
-            onChanged: (val){ 
-              setState(() {
-                tahunRakit = val;
-              });
-            },
             validator: (val) => val.isEmpty ? "Kolom harus diisi" : null,
             onSaved: (val) => tahunRakit = val,
           )
@@ -1532,11 +1428,6 @@ class _NewLetterState extends State<NewLetter> {
               helperText: "Isi Silinder",
             ),
             controller: TextEditingController(text: isiSilinder),
-            onChanged: (val){ 
-              setState(() {
-                isiSilinder = val;
-              });
-            },
             validator: (val) => val.isEmpty ? "Kolom harus diisi" : null,
             onSaved: (val) => isiSilinder = val,
           )
@@ -1550,11 +1441,6 @@ class _NewLetterState extends State<NewLetter> {
               helperText: "Warna",
             ),
             controller: TextEditingController(text: warnaKendaraan),
-            onChanged: (val){ 
-              setState(() {
-                warnaKendaraan = val;
-              });
-            },
             validator: (val) => val.isEmpty ? "Kolom harus diisi" : null,
             onSaved: (val) => warnaKendaraan = val,
           )
@@ -1568,11 +1454,6 @@ class _NewLetterState extends State<NewLetter> {
               helperText: "Nomor Rangka",
             ),
             controller: TextEditingController(text: nomorRangka),
-            onChanged: (val){ 
-              setState(() {
-                nomorRangka = val;
-              });
-            },
             validator: (val) => val.isEmpty ? "Kolom harus diisi" : null,
             onSaved: (val) => nomorRangka = val,
           )
@@ -1586,11 +1467,6 @@ class _NewLetterState extends State<NewLetter> {
               helperText: "Nomor Mesin",
             ),
             controller: TextEditingController(text: nomorMesin),
-            onChanged: (val){ 
-              setState(() {
-                nomorMesin = val;
-              });
-            },
             validator: (val) => val.isEmpty ? "Kolom harus diisi" : null,
             onSaved: (val) => nomorMesin = val,
           )
@@ -1604,11 +1480,6 @@ class _NewLetterState extends State<NewLetter> {
               helperText: "Nomor BPKB",
             ),
             controller: TextEditingController(text: nomorBPKB),
-            onChanged: (val){ 
-              setState(() {
-                nomorBPKB = val;
-              });
-            },
             validator: (val) => val.isEmpty ? "Kolom harus diisi" : null,
             onSaved: (val) => nomorBPKB = val,
           )
@@ -1622,11 +1493,6 @@ class _NewLetterState extends State<NewLetter> {
               helperText: "Atas Nama BPKB",
             ),
             controller: TextEditingController(text: atasNamaBPKB),
-            onChanged: (val){ 
-              setState(() {
-                atasNamaBPKB = val;
-              });
-            },
             validator: (val) => val.isEmpty ? "Kolom harus diisi" : null,
             onSaved: (val) => atasNamaBPKB = val,
           )
@@ -1635,17 +1501,21 @@ class _NewLetterState extends State<NewLetter> {
     );
   }
 
-  void setGeneralData(){
+  void setData(){
     if(jenKel == null || kebangsaan == null || statNikah == null){
+      setState(() {
+        isLoading = false;
+      });
+
       Fluttertoast.showToast(
         msg: "Kolom pilihan tidak boleh kosong",
         toastLength: Toast.LENGTH_LONG,
         gravity: ToastGravity.BOTTOM
       );
     }else{
+      Map<String, Object> subData = {};
+
       Map<String,Object> data = {
-        "id_pemohon": idWarga, 
-        "nomor_surat": "-",
         "nama": nama,
         "tempat_lahir": tempatLahir,
         "tanggal_lahir": tanggalLahir,
@@ -1662,269 +1532,202 @@ class _NewLetterState extends State<NewLetter> {
         "nip_ttd": "-"
       };
 
+      switch (surat.tipeSurat) {
+        case "Keterangan Berpergian":
+          subData = {
+            "daerah_keberadaan": daerahKeberadaan,
+            "tahun_kepergian": tahunKepergian
+          };
 
-      switch (letterCode) {
-        case "ket_pergi":
-          setFormBerpergian(data);
+          data.addAll(subData);
+          print(data);
+          submitForm(data);
           break;
-        case "ket_kelakuan": 
-          setFormKelakuanBaik(data);
+        case "Keterangan Kelakuan Baik" :
+          submitForm(data);
+        break;
+        case "Keterangan Cerai":
+          if(statCerai != null){
+            subData = {
+              "status_cerai": statCerai,
+              "nama_pasangan": namaPasangan,
+              "tahun_cerai": tahunCerai,
+              "tempat_cerai": tempatCerai
+            };
+
+            data.addAll(subData);
+            print(data);
+            submitForm(data);
+          }else{
+            setState(() {
+              isLoading = false;
+            });
+
+            Fluttertoast.showToast(
+              msg: "Harap pilih status cerai",
+              toastLength: Toast.LENGTH_LONG,
+              gravity: ToastGravity.BOTTOM
+            );
+          }
+
           break;
-        case "ket_cerai":
-          setFormKetCerai(data);
+        case "Keterangan Kepemilikan Sepeda Motor":
+          subData = {
+            "tipe_surat": "Keterangan Kepemilikan Sepeda Motor",
+            "nomor_polisi": nomorPolisi,
+            "merk": merk,
+            "tipe": tipe,
+            "jenis": jenis,
+            "tahun_pembuatan": tahunBuat,
+            "tahun_perakitan": tahunRakit,
+            "isi_silinder": isiSilinder,
+            "warna": warnaKendaraan,
+            "nomor_rangka": nomorRangka,
+            "nomor_mesin": nomorMesin,
+            "nomor_bpkb": nomorBPKB,
+            "atas_nama_bpkb": atasNamaBPKB
+          };
+
+          data.addAll(subData);
+          print(data);
+          submitForm(data);
+
           break;
-        case "kep_motor":
-          setFormKepMotor(data);
+        case "Keterangan Bebas Pajak":
+          subData = {
+            "tipe_surat": "Keterangan Bebas Pajak",
+            "objek_pajak": objekPajak
+          };
+
+          data.addAll(subData);
+          print(data);
+          submitForm(data);
+
           break;
-        case "ket_pajak":
-          setFormBebasPajak(data);
+        case "Keterangan Beda Nama":
+          subData = {
+            "tipe_surat": "Keterangan Beda Nama",
+            "objek_salah_nama": objekSalahNama,
+            "nama_objek_salah_nama": namaObjekSalahNama,
+            "tanggal_lahir_objek_salah_nama": tanggalLahirSalah,
+            "tempat_lahir_objek_salah_nama": tempatLahirSalah,
+            "jenis_kelamin_objek_salah_nama": jenKelSalah,
+            "alamat_objek_salah_nama": alamatSalah
+          };
+
+          data.addAll(subData);
+          print(data);
+          submitForm(data);
+
           break;
-        case "ket_bed_nama":
-          setFormBedaNama(data);
+        case "Keterangan Kehilangan":
+          subData = {
+            "tipe_surat": "Keterangan Kehilangan",
+            "objek_hilang": objekHilang,
+            "tempat_hilang": tempatHilang,
+            "tanggal_hilang": tanggalHilang
+          };
           break;
-        case "ket_hilang":
-          setFormKehilangan(data);
+        case "Keterangan Telah Menikah":
+          String jenKelPas = "";
+
+          if(jenKel == "L"){
+            jenKelPas = "P";
+          }else{
+            jenKelPas = "L";
+          }
+
+          if(kebangsaanPasangan != null){
+            subData = {
+              "tipe_surat": "Keterangan Telah Menikah",
+              "nama_pasangan": namaPasangan,
+              "tanggal_lahir_pasangan": tanggalLahirPasangan,
+              "tempat_lahir_pasangan": tempatLahirPasangan,
+              "jenis_kelamin_pasangan": jenKelPas,
+              "agama_pasangan": agamaPasangan,
+              "kebangsaan_pasangan": kebangsaanPasangan,
+              "pekerjaan_pasangan": pekerjaanPasangan,
+              "alamat_pasangan": alamatPasangan,
+              "tanggal_nikah": tanggalNikah,
+              "tempat_nikah": tempatMenikah
+            };
+
+            data.addAll(subData);
+            print(data);
+            submitForm(data);
+
+          }else{
+            setState(() {
+              isLoading = false;
+            });
+
+            Fluttertoast.showToast(
+              msg: "Harap pilih kebangsaan pasangan",
+              toastLength: Toast.LENGTH_LONG,
+              gravity: ToastGravity.BOTTOM
+            );
+          }
           break;
-        case "ket_nikah":
-          setFormKetNikah(data);
-          break;
-        case "tang_ortu":
-          setFormTangjabOrtu(data);
+        case "Pertanggungjawaban Orang Tua":
+          if(jenKelAnak != null && kebangsaanAnak != null && hubunganOrtu != null){
+            Map<String, Object> subData = {
+              "tipe_surat": "Pertanggungjawaban Orang Tua",
+              "nama_anak": namaAnak,
+              "tanggal_lahir_anak": tanggalLahirAnak,
+              "tempat_lahir_anak": tempatLahirAnak,
+              "jenis_kelamin_anak": jenKelAnak,
+              "agama_anak": agamaAnak,
+              "kebangsaan_anak": kebangsaanAnak,
+              "pekerjaan_anak": pekerjaanAnak,
+              "alamat_anak": alamatAnak,
+              "jenis_kegiatan": jenisKegiatan,
+              "nama_instansi_kegiatan": namaInstansiKegiatan,
+              "alamat_instansi": alamatInstansi,
+              "hubungan_ortu_dengan_anak": hubunganOrtu,
+              "nama_kades": namaKades,
+              "nama_desa": namaDesa,
+              "nama_kadus": namaKadus,
+              "nama_dusun": namaDusun
+            };
+
+            data.addAll(subData);
+            print(data);
+            submitForm(data);
+
+          }else{
+            setState(() {
+              isLoading = false;
+            });
+
+            Fluttertoast.showToast(
+              msg: "Kolom pilihan tidak boleh kosong",
+              toastLength: Toast.LENGTH_LONG,
+              gravity: ToastGravity.BOTTOM
+            );
+          }
           break;
         default:
       }
     }
   }
 
-  void setFormBerpergian(Map<String, Object> generalData){
-    Map<String, Object> subData = {
-      "tipe_surat": "Keterangan Berpergian",
-      "daerah_keberadaan": daerahKeberadaan,
-      "tahun_kepergian": tahunKepergian
-    };
-
-    generalData.addAll(subData);
-    // print(generalData);
-    // setState(() {
-    //   isLoading = false;
-    // });
-    String formURI = "https://www.terraciv.me/api/set_surat_keterangan_pergi";
-    submitForm(generalData, formURI);
-  }
-  
-  void setFormKelakuanBaik(Map<String, Object> generalData){
-    Map<String, Object> subData = {
-      "tipe_surat": "Keterangan Kelakuan Baik",
-    };
-
-    generalData.addAll(subData);
-    // print(generalData);
-    // setState(() {
-    //   isLoading = false;
-    // });
-    String formURI = "https://www.terraciv.me/api/set_surat_kelakuan_baik";
-    submitForm(generalData, formURI);
-  }
-  
-  void setFormKetCerai(Map<String, Object> generalData){
-    if(statCerai != null){
-      Map<String, Object> subData = {
-        "tipe_surat": "Keterangan Cerai",
-        "status_cerai": statCerai,
-        "nama_pasangan": namaPasangan,
-        "tahun_cerai": tahunCerai,
-        "tempat_cerai": tempatCerai
-      };
-
-      generalData.addAll(subData);
-      // print(generalData);
-      // setState(() {
-      //   isLoading = false;
-      // });
-      String formURI = "https://www.terraciv.me/api/set_surat_keterangan_cerai";
-      submitForm(generalData, formURI);
-    }else{
-      setState(() {
-        isLoading = false;
-      });
-      Fluttertoast.showToast(
-        msg: "Harap pilih status cerai",
-        toastLength: Toast.LENGTH_LONG,
-        gravity: ToastGravity.BOTTOM
-      );
-    }
-  }
-
-  void setFormKepMotor(Map<String, Object> generalData){
-    Map<String, Object> subData = {
-      "tipe_surat": "Keterangan Kepemilikan Sepeda Motor",
-      "nomor_polisi": nomorPolisi,
-      "merk": merk,
-      "tipe": tipe,
-      "jenis": jenis,
-      "tahun_pembuatan": tahunBuat,
-      "tahun_perakitan": tahunRakit,
-      "isi_silinder": isiSilinder,
-      "warna": warnaKendaraan,
-      "nomor_rangka": nomorRangka,
-      "nomor_mesin": nomorMesin,
-      "nomor_bpkb": nomorBPKB,
-      "atas_nama_bpkb": atasNamaBPKB
-    };
-
-    generalData.addAll(subData);
-    // print(generalData);
-    // setState(() {
-    //   isLoading = false;
-    // });
-    String formURI = "https://www.terraciv.me/api/set_surat_keterangan_ksm";
-    submitForm(generalData, formURI);
-  }
-
-  void setFormBebasPajak(Map<String, Object> generalData){
-    Map<String, Object> subData = {
-      "tipe_surat": "Keterangan Bebas Pajak",
-      "objek_pajak": objekPajak
-    };
-
-    generalData.addAll(subData);
-    // print(generalData);
-    // setState(() {
-    //   isLoading = false;
-    // });
-    String formURI = "https://www.terraciv.me/api/set_surat_keterangan_bebas_pajak";
-    submitForm(generalData, formURI);
-  }
-
-  void setFormBedaNama(Map<String, Object> generalData){
-    if(jenKelSalah != null){
-      Map<String, Object> subData = {
-        "tipe_surat": "Keterangan Beda Nama",
-        "objek_salah_nama": objekSalahNama,
-        "nama_objek_salah_nama": namaObjekSalahNama,
-        "tanggal_lahir_objek_salah_nama": tanggalLahirSalah,
-        "tempat_lahir_objek_salah_nama": tempatLahirSalah,
-        "jenis_kelamin_objek_salah_nama": jenKelSalah,
-        "alamat_objek_salah_nama": alamatSalah
-      };
-
-      generalData.addAll(subData);
-      // print(generalData);
-      // setState(() {
-      //   isLoading = false;
-      // });
-      String formURI = "https://www.terraciv.me/api/set_surat_keterangan_beda_nama";
-      submitForm(generalData, formURI);
-    }else{
-      Fluttertoast.showToast(
-        msg: "Harap pilih jenis kelamin di objek salah nama",
-        toastLength: Toast.LENGTH_LONG,
-        gravity: ToastGravity.BOTTOM
-      );
-    }
-  }
-
-  void setFormKehilangan(Map<String, Object> generalData){
-    Map<String, Object> subData = {
-      "tipe_surat": "Keterangan Kehilangan",
-      "objek_hilang": objekHilang,
-      "tempat_hilang": tempatHilang,
-      "tanggal_hilang": tanggalHilang
-    };
-
-    generalData.addAll(subData);
-    // print(generalData);
-    // setState(() {
-    //   isLoading = false;
-    // });
-    String formURI = "https://www.terraciv.me/api/set_surat_keterangan_kehilangan";
-    submitForm(generalData, formURI);
-  }
-  
-  void setFormKetNikah(Map<String, Object> generalData){
-    String jenKelPas = "";
-
-    if(jenKel == "L"){
-      jenKelPas = "P";
-    }else{
-      jenKelPas = "L";
-    }
-
-    if(kebangsaanPasangan != null){
-      Map<String, Object> subData = {
-        "tipe_surat": "Keterangan Telah Menikah",
-        "nama_pasangan": namaPasangan,
-        "tanggal_lahir_pasangan": tanggalLahirPasangan,
-        "tempat_lahir_pasangan": tempatLahirPasangan,
-        "jenis_kelamin_pasangan": jenKelPas,
-        "agama_pasangan": agamaPasangan,
-        "kebangsaan_pasangan": kebangsaanPasangan,
-        "pekerjaan_pasangan": pekerjaanPasangan,
-        "alamat_pasangan": alamatPasangan,
-        "tanggal_nikah": tanggalNikah,
-        "tempat_nikah": tempatMenikah
-      };
-
-      generalData.addAll(subData);
-      // print(generalData);
-      // setState(() {
-      //   isLoading = false;
-      // });
-      String formURI = "https://www.terraciv.me/api/set_surat_keterangan_telah_menikah";
-      submitForm(generalData, formURI);
-    }else{
-      Fluttertoast.showToast(
-        msg: "Harap pilih kebangsaan pasangan",
-        toastLength: Toast.LENGTH_LONG,
-        gravity: ToastGravity.BOTTOM
-      );
-    }
-  }
-
-  void setFormTangjabOrtu(Map<String, Object> generalData){
-    if(jenKelAnak != null && kebangsaanAnak != null && hubunganOrtu != null){
-      Map<String, Object> subData = {
-        "tipe_surat": "Pertanggungjawaban Orang Tua",
-        "nama_anak": namaAnak,
-        "tanggal_lahir_anak": tanggalLahirAnak,
-        "tempat_lahir_anak": tempatLahirAnak,
-        "jenis_kelamin_anak": jenKelAnak,
-        "agama_anak": agamaAnak,
-        "kebangsaan_anak": kebangsaanAnak,
-        "pekerjaan_anak": pekerjaanAnak,
-        "alamat_anak": alamatAnak,
-        "jenis_kegiatan": jenisKegiatan,
-        "nama_instansi_kegiatan": namaInstansiKegiatan,
-        "alamat_instansi": alamatInstansi,
-        "hubungan_ortu_dengan_anak": hubunganOrtu,
-        "nama_kades": namaKades,
-        "nama_desa": namaDesa,
-        "nama_kadus": namaKadus,
-        "nama_dusun": namaDusun
-      };
-
-      generalData.addAll(subData);
-      // print(generalData);
-      // setState(() {
-      //   isLoading = false;
-      // });
-      String formURI = "https://www.terraciv.me/api/set_surat_pertanggung_jawaban_ortu";
-      submitForm(generalData, formURI);
-    }else{
-      Fluttertoast.showToast(
-        msg: "Kolom pilihan tidak boleh kosong",
-        toastLength: Toast.LENGTH_LONG,
-        gravity: ToastGravity.BOTTOM
-      );
-    }
-  }
-
-  void submitForm(Map<String, Object> body, String formURI) async{
+  void submitForm(Map<String, Object> body) async{
     try{
+      Map<String, Object> meta = {
+        "id_surat" : surat.idSurat,
+        "id_sub_surat" : suratRaw["id_sub_surat"],
+        "tipe" : surat.tipeSurat
+      };
+
+      meta.addAll(body);
+
+      String formURI = "https://www.terraciv.me/api/update_surat";
+
       Map<String,String> header = {
         "x-api-key": "5baa441c93eaa4d6fb824dfc561a96d6",
         "Content-Type": "application/x-www-form-urlencoded"};
-      http.Response data = await http.post(formURI, body: body, headers: header).timeout(
+
+      http.Response data = await http.post(formURI, body: meta, headers: header).timeout(
         Duration(seconds: 300),
         onTimeout: (){
           isLoading = false;
@@ -1943,15 +1746,22 @@ class _NewLetterState extends State<NewLetter> {
         isLoading = false;
       });
 
+      print(data.body);
+
       if(data.statusCode == 200){
         Fluttertoast.showToast(
-          msg: "Data Berhasil Dikirim",
+          msg: "Data Berhasil Disimpan",
           toastLength: Toast.LENGTH_LONG,
           gravity: ToastGravity.BOTTOM
         );
-        Navigator.of(context).pop();
-      }else{
         
+        Navigator.pop(context, true);
+      }else{
+        Fluttertoast.showToast(
+          msg: "Terjadi Kesalahan silahkan coba lagi",
+          toastLength: Toast.LENGTH_LONG,
+          gravity: ToastGravity.BOTTOM
+        );
       }
     }catch(e){
       setState(() {
@@ -1965,5 +1775,6 @@ class _NewLetterState extends State<NewLetter> {
       );
     }
   }
+
 
 }
