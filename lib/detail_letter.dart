@@ -350,39 +350,10 @@ class _DetailLetterState extends State<DetailLetter> {
     }
   }
 
-  Widget statPencetak(String pencetak, String noSurat){
-    if((noSurat != "-" || noSurat != 'batal') && pencetak != null){
-      return Container(
-        margin: EdgeInsets.symmetric(horizontal: 15, vertical: 5),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: <Widget>[
-            Text(
-              "Dicetak Oleh",
-              style: TextStyle(
-                fontSize: 16,
-                fontFamily: "Montserrat",
-                fontWeight: FontWeight.w200
-              ),
-            ),
-            Text(
-              pencetak,
-              style: TextStyle(
-                fontSize: 18,
-                fontFamily: "Montserrat",
-                fontWeight: FontWeight.w400
-              ),
-            ),
-          ],
-        ),
-      );
-    }else{
-      return SizedBox.shrink();
-    }
-  }
-
   Widget statCheckTanggal(String tglSurat, String noSurat){
-    if(noSurat != "-" || noSurat != "batal"){
+    if(noSurat == "-" || noSurat == "batal"){
+      return SizedBox.shrink();
+    }else{
       return Container(
         margin: EdgeInsets.symmetric(horizontal: 15, vertical: 5),
         child: Column(
@@ -407,13 +378,13 @@ class _DetailLetterState extends State<DetailLetter> {
           ],
         ),
       );
-    }else{
-      return SizedBox.shrink();
     }
   }
 
   Widget statCheckSurat(String atasNama, String jabatan, String nip, String noSurat){
-    if(noSurat != "-" || noSurat != "batal"){
+    if(noSurat == "-" || noSurat == "batal"){
+      return SizedBox.shrink();
+    }else{
       return Container(
         margin: EdgeInsets.symmetric(horizontal: 15, vertical: 5),
         child: Column(
@@ -446,8 +417,6 @@ class _DetailLetterState extends State<DetailLetter> {
           ],
         ),
       );
-    }else{
-      return SizedBox.shrink();
     }
   }
 
