@@ -51,7 +51,9 @@ class _HomeState extends State<Home> {
             color: Color(0xFF18D191),
             size: 25,
         ),
-        onPressed: (){},
+        onPressed: (){
+          Navigator.pushNamed(context, "/home/notification");
+        },
       ),
     );
   }

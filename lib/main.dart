@@ -3,6 +3,7 @@ import 'package:surat_desa/change_pass_settings.dart';
 import 'package:surat_desa/detail_letter.dart';
 import 'package:surat_desa/edit_letter.dart';
 import 'package:surat_desa/login.dart';
+import 'package:surat_desa/notification.dart';
 import 'package:surat_desa/profile_settings.dart';
 import 'package:surat_desa/settings.dart';
 import 'new_letter.dart';
@@ -49,6 +50,25 @@ class MyApp extends StatelessWidget {
           case '/home/new_letter':
             return PageRouteBuilder(
               pageBuilder: (context, animation, secondaryAnimation) => NewLetter(),
+              transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                return ScaleTransition(
+                  scale: Tween<double>(
+                    begin: 0.0,
+                    end: 1.0,
+                  ).animate(
+                    CurvedAnimation(
+                      parent: animation,
+                      curve: Curves.fastOutSlowIn,
+                    ),
+                  ),
+                  child: child,
+                );
+              },
+            );
+            break;
+          case '/home/notification':
+            return PageRouteBuilder(
+              pageBuilder: (context, animation, secondaryAnimation) => Notifications(),
               transitionsBuilder: (context, animation, secondaryAnimation, child) {
                 return ScaleTransition(
                   scale: Tween<double>(
