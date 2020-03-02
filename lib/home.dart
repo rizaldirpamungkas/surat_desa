@@ -131,7 +131,9 @@ class _HomeState extends State<Home> {
             ),
           ],
         ),
-        onPressed: (){},
+        onPressed: (){
+          Navigator.pushNamed(context, "/home/settings");
+        },
       ),
     );
   }

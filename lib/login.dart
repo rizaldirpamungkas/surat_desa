@@ -184,7 +184,7 @@ class _LoginState extends State<Login> {
                   )
                 ),
       onPressed: (){
-        deleteUserPreferences();
+        
       },
     );
   }
@@ -314,23 +314,7 @@ class _LoginState extends State<Login> {
     prefs.setString("pass", pass);
   }
 
-  void deleteUserPreferences() async{
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    prefs.remove("idWarga");
-    prefs.remove("userWarga");
-    prefs.remove("namaWarga");
-    prefs.remove("tempatLahir");
-    prefs.remove("tanggalLahir");
-    prefs.remove("agama");
-    prefs.remove("kebangsaan");
-    prefs.remove("statusPernikahan");
-    prefs.remove("pekerjaan");
-    prefs.remove("alamat");
-    prefs.remove("jenisKelamin");
-    prefs.remove("kontak");
-    prefs.remove("nik");
-    prefs.remove("pass");
-  }
+  
 
   dynamic getDataUser(String key) async{
     SharedPreferences prefs = await SharedPreferences.getInstance();
