@@ -5,7 +5,6 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:intl/intl.dart';
 
-
 class EditLetter extends StatefulWidget {
 
   final Surat surat;
@@ -361,6 +360,9 @@ class _EditLetterState extends State<EditLetter> {
             decoration: InputDecoration(
               helperText: "Nama"
             ),
+            onChanged: (val){
+              nama = val;
+            },
             validator: (val) => val.isEmpty ? "Kolom harus diisi" : null,
             onSaved: (val) => nama = val,
           ),
@@ -376,6 +378,9 @@ class _EditLetterState extends State<EditLetter> {
             decoration: InputDecoration(
               helperText: "Tempat Kelahiran",
             ),
+            onChanged: (val){
+              tempatLahir = val;
+            },
             validator: (val) => val.isEmpty ? "Kolom harus diisi" : null,
             onSaved: (val) => tempatLahir = val,
           ),
@@ -423,6 +428,9 @@ class _EditLetterState extends State<EditLetter> {
             decoration: InputDecoration(
               helperText: "Agama",
             ),
+            onChanged: (val){
+              agama = val;
+            },
             validator: (val) => val.isEmpty ? "Kolom harus diisi" : null,
             onSaved: (val) => agama = val,
           ),
@@ -492,6 +500,9 @@ class _EditLetterState extends State<EditLetter> {
             decoration: InputDecoration(
               helperText: "Pekerjaan",
             ),
+            onChanged: (val){
+              pekerjaan = val;
+            },
             validator: (val) => val.isEmpty ? "Kolom harus diisi" : null,
             onSaved: (val) => pekerjaan = val,
           ),
@@ -507,6 +518,9 @@ class _EditLetterState extends State<EditLetter> {
             decoration: InputDecoration(
               helperText: "Alamat",
             ),
+            onChanged: (val){
+              alamat = val;
+            },
             validator: (val) => val.isEmpty ? "Kolom harus diisi" : null,
             onSaved: (val) => alamat = val,
           ),
@@ -546,6 +560,9 @@ class _EditLetterState extends State<EditLetter> {
             decoration: InputDecoration(
               helperText: "NIK",
             ),
+            onChanged: (val){
+              nik = val;
+            },
             validator: (val) => val.isEmpty ? "Kolom harus diisi" : null,
             onSaved: (val) => nik = val,
           ),
@@ -567,9 +584,7 @@ class _EditLetterState extends State<EditLetter> {
             ),
             controller: TextEditingController(text: namaPasangan),
             onChanged: (val){ 
-              setState(() {
-                namaPasangan = val;
-              });
+              namaPasangan = val;
             },
             validator: (val) => val.isEmpty ? "Kolom harus diisi" : null,
             onSaved: (val) => namaPasangan = val,
@@ -585,9 +600,7 @@ class _EditLetterState extends State<EditLetter> {
             ),
             controller: TextEditingController(text: tempatLahirPasangan),
             onChanged: (val){ 
-              setState(() {
-                tempatLahirPasangan= val;
-              });
+              tempatLahirPasangan= val;
             },
             validator: (val) => val.isEmpty ? "Kolom harus diisi" : null,
             onSaved: (val) => tempatLahirPasangan = val,
@@ -635,9 +648,7 @@ class _EditLetterState extends State<EditLetter> {
             ),
             controller: TextEditingController(text: agamaPasangan),
             onChanged: (val){ 
-              setState(() {
-                agamaPasangan = val;
-              });
+              agamaPasangan = val;
             },
             validator: (val) => val.isEmpty ? "Kolom harus diisi" : null,
             onSaved: (val) => agamaPasangan= val,
@@ -676,9 +687,7 @@ class _EditLetterState extends State<EditLetter> {
             ),
             controller: TextEditingController(text: pekerjaanPasangan),
             onChanged: (val){ 
-              setState(() {
-                pekerjaanPasangan = val;
-              });
+              pekerjaanPasangan = val;
             },
             validator: (val) => val.isEmpty ? "Kolom harus diisi" : null,
             onSaved: (val) => pekerjaanPasangan = val,
@@ -694,9 +703,7 @@ class _EditLetterState extends State<EditLetter> {
             ),
             controller: TextEditingController(text: alamatPasangan),
             onChanged: (val){ 
-              setState(() {
-                alamatPasangan = val;
-              });
+              alamatPasangan = val;
             },
             validator: (val) => val.isEmpty ? "Kolom harus diisi" : null,
             onSaved: (val) => alamatPasangan = val,
@@ -744,9 +751,7 @@ class _EditLetterState extends State<EditLetter> {
             ),
             controller: TextEditingController(text: tempatMenikah),
             onChanged: (val){ 
-              setState(() {
-                tempatMenikah= val;
-              });
+              tempatMenikah = val;
             },
             validator: (val) => val.isEmpty ? "Kolom harus diisi" : null,
             onSaved: (val) => tempatMenikah = val,
@@ -767,7 +772,12 @@ class _EditLetterState extends State<EditLetter> {
             decoration: InputDecoration(
               helperText: "Nama Anak"
             ),
-            controller: TextEditingController(text: namaAnak),
+            controller: TextEditingController(
+              text: namaAnak
+            ),
+            onChanged: (val){
+              namaAnak = val;
+            },
             validator: (val) => val.isEmpty ? "Kolom harus diisi" : null,
             onSaved: (val) => namaAnak = val,
           ),
@@ -781,6 +791,9 @@ class _EditLetterState extends State<EditLetter> {
               helperText: "Tempat Kelahiran Anak",
             ),
             controller: TextEditingController(text: tempatLahirAnak),
+            onChanged: (val){
+              tempatLahirAnak = val;
+            },
             validator: (val) => val.isEmpty ? "Kolom harus diisi" : null,
             onSaved: (val) => tempatLahirAnak = val,
           ),
@@ -849,6 +862,9 @@ class _EditLetterState extends State<EditLetter> {
               helperText: "Agama Anak",
             ),
             controller: TextEditingController(text: agamaAnak),
+            onChanged: (val){
+              agamaAnak = val;
+            },
             validator: (val) => val.isEmpty ? "Kolom harus diisi" : null,
             onSaved: (val) => agamaAnak = val,
           ),
@@ -885,6 +901,9 @@ class _EditLetterState extends State<EditLetter> {
               helperText: "Pekerjaan Anak",
             ),
             controller: TextEditingController(text: pekerjaanAnak),
+            onChanged: (val){
+              pekerjaanAnak = val;
+            },
             validator: (val) => val.isEmpty ? "Kolom harus diisi" : null,
             onSaved: (val) => pekerjaanAnak = val,
           ),
@@ -898,6 +917,9 @@ class _EditLetterState extends State<EditLetter> {
               helperText: "Alamat Anak",
             ),
             controller: TextEditingController(text: alamatAnak),
+            onChanged: (val){
+              alamatAnak = val;
+            },
             validator: (val) => val.isEmpty ? "Kolom harus diisi" : null,
             onSaved: (val) => alamatAnak = val,
           ),
@@ -911,6 +933,9 @@ class _EditLetterState extends State<EditLetter> {
               helperText: "Jenis Kegiatan",
             ),
             controller: TextEditingController(text: jenisKegiatan),
+            onChanged: (val){
+              jenisKegiatan = val;
+            },
             validator: (val) => val.isEmpty ? "Kolom harus diisi" : null,
             onSaved: (val) => jenisKegiatan = val,
           ),
@@ -924,6 +949,9 @@ class _EditLetterState extends State<EditLetter> {
               helperText: "Nama Instansi Kegiatan",
             ),
             controller: TextEditingController(text: namaInstansiKegiatan),
+            onChanged: (val){
+              namaInstansiKegiatan = val;
+            },
             validator: (val) => val.isEmpty ? "Kolom harus diisi" : null,
             onSaved: (val) => namaInstansiKegiatan = val,
           ),
@@ -937,6 +965,9 @@ class _EditLetterState extends State<EditLetter> {
               helperText: "Alamat Instansi",
             ),
             controller: TextEditingController(text: alamatInstansi),
+            onChanged: (val){
+              alamatInstansi = val;
+            },
             validator: (val) => val.isEmpty ? "Kolom harus diisi" : null,
             onSaved: (val) => alamatInstansi = val,
           ),
@@ -977,6 +1008,9 @@ class _EditLetterState extends State<EditLetter> {
               helperText: "Nama Kepala Desa",
             ),
             controller: TextEditingController(text: namaKades),
+            onChanged: (val){
+              namaKades = val;
+            },
             validator: (val) => val.isEmpty ? "Kolom harus diisi" : null,
             onSaved: (val) => namaKades = val,
           ),
@@ -990,6 +1024,9 @@ class _EditLetterState extends State<EditLetter> {
               helperText: "Nama Desa",
             ),
             controller: TextEditingController(text: namaDesa),
+            onChanged: (val){
+              namaDesa = val;
+            },
             validator: (val) => val.isEmpty ? "Kolom harus diisi" : null,
             onSaved: (val) => namaDesa = val,
           ),
@@ -1003,6 +1040,9 @@ class _EditLetterState extends State<EditLetter> {
               helperText: "Nama Dusun",
             ),
             controller: TextEditingController(text: namaDusun),
+            onChanged: (val){
+              namaDusun = val;
+            },
             validator: (val) => val.isEmpty ? "Kolom harus diisi" : null,
             onSaved: (val) => namaDusun = val,
           ),
@@ -1016,6 +1056,9 @@ class _EditLetterState extends State<EditLetter> {
               helperText: "Nama Kepala Dusun",
             ),
             controller: TextEditingController(text: namaKadus),
+            onChanged: (val){
+              namaKadus = val;
+            },
             validator: (val) => val.isEmpty ? "Kolom harus diisi" : null,
             onSaved: (val) => namaKadus = val,
           ),
@@ -1033,6 +1076,9 @@ class _EditLetterState extends State<EditLetter> {
             maxLines: 1,
             textCapitalization: TextCapitalization.words,
             controller: TextEditingController(text: daerahKeberadaan),
+            onChanged: (val){
+              daerahKeberadaan = val;
+            },
             validator: (val) => val.isEmpty ? "Kolom harus diisi" : null,
             onSaved: (val) => daerahKeberadaan = val,
             decoration: InputDecoration(
@@ -1050,6 +1096,9 @@ class _EditLetterState extends State<EditLetter> {
               helperText: "Tahun Kepergian",
             ),
             controller: TextEditingController(text: tahunKepergian),
+            onChanged: (val){
+              tahunKepergian= val;
+            },
             validator: (val) => val.isEmpty ? "Kolom harus diisi" : null,
             onSaved: (val) => tahunKepergian = val,
           )
@@ -1070,6 +1119,9 @@ class _EditLetterState extends State<EditLetter> {
               helperText: "Objek Bebas Pajak",
             ),
             controller: TextEditingController(text: objekPajak),
+            onChanged: (val){
+              objekPajak = val;
+            },
             validator: (val) => val.isEmpty ? "Kolom harus diisi" : null,
             onSaved: (val) => objekPajak = val,
           )
@@ -1118,6 +1170,9 @@ class _EditLetterState extends State<EditLetter> {
             decoration: InputDecoration(
               helperText: "Nama Pasangan",
             ),
+            onChanged: (val){
+              namaPasangan = val;
+            },
             validator: (val) => val.isEmpty ? "Kolom harus diisi" : null,
             onSaved: (val) => namaPasangan = val,
           )
@@ -1134,6 +1189,9 @@ class _EditLetterState extends State<EditLetter> {
             decoration: InputDecoration(
               helperText: "Tahun Cerai",
             ),
+            onChanged: (val){
+              tahunCerai = val;
+            },
             validator: (val) => val.toString().isEmpty ? "Kolom harus diisi" : null,
             onSaved: (val) => tahunCerai = val,
           )
@@ -1149,6 +1207,9 @@ class _EditLetterState extends State<EditLetter> {
             decoration: InputDecoration(
               helperText: "Tempat Cerai",
             ),
+            onChanged: (val){
+              tempatCerai = val;
+            },
             validator: (val) => val.isEmpty ? "Kolom harus diisi" : null,
             onSaved: (val) => tempatCerai = val,
           )
@@ -1169,6 +1230,9 @@ class _EditLetterState extends State<EditLetter> {
               helperText: "Objek Hilang",
             ),
             controller: TextEditingController(text: objekHilang),
+            onChanged: (val){
+              objekHilang = val;
+            },
             validator: (val) => val.isEmpty ? "Kolom harus diisi" : null,
             onSaved: (val) => objekHilang = val,
           )
@@ -1182,6 +1246,9 @@ class _EditLetterState extends State<EditLetter> {
               helperText: "Tempat Hilang",
             ),
             controller: TextEditingController(text: tempatHilang),
+            onChanged: (val){
+              tempatHilang = val;
+            },
             validator: (val) => val.isEmpty ? "Kolom harus diisi" : null,
             onSaved: (val) => tempatHilang = val,
           )
@@ -1234,6 +1301,9 @@ class _EditLetterState extends State<EditLetter> {
               helperText: "Objek Salah Nama",
             ),
             controller: TextEditingController(text: objekSalahNama),
+            onChanged: (val){
+              objekSalahNama = val;
+            },
             validator: (val) => val.isEmpty ? "Kolom harus diisi" : null,
             onSaved: (val) => objekSalahNama = val,
           )
@@ -1247,6 +1317,9 @@ class _EditLetterState extends State<EditLetter> {
               helperText: "Nama di Objek Salah Nama",
             ),
             controller: TextEditingController(text: namaObjekSalahNama),
+            onChanged: (val){
+              namaObjekSalahNama = val;
+            },
             validator: (val) => val.isEmpty ? "Kolom harus diisi" : null,
             onSaved: (val) => namaObjekSalahNama = val,
           )
@@ -1292,6 +1365,9 @@ class _EditLetterState extends State<EditLetter> {
               helperText: "Tempat Lahir di Objek Salah Nama",
             ),
             controller: TextEditingController(text: tempatLahirSalah),
+            onChanged: (val){
+              tempatLahirSalah = val;
+            },
             validator: (val) => val.isEmpty ? "Kolom harus diisi" : null,
             onSaved: (val) => tempatLahirSalah = val,
           )
@@ -1328,6 +1404,9 @@ class _EditLetterState extends State<EditLetter> {
               helperText: "Alamat di Objek Salah Nama",
             ),
             controller: TextEditingController(text: alamatSalah),
+            onChanged: (val){
+              alamatSalah = val;
+            },
             validator: (val) => val.isEmpty ? "Kolom harus diisi" : null,
             onSaved: (val) => alamatSalah = val,
           ),
@@ -1348,6 +1427,9 @@ class _EditLetterState extends State<EditLetter> {
               helperText: "Nomor Polisi",
             ),
             controller: TextEditingController(text: nomorPolisi),
+            onChanged: (val){
+              nomorPolisi= val;
+            },
             validator: (val) => val.isEmpty ? "Kolom harus diisi" : null,
             // onSaved: (val) => nomorPolisi = val,
           )
@@ -1361,6 +1443,9 @@ class _EditLetterState extends State<EditLetter> {
               helperText: "Merk",
             ),
             controller: TextEditingController(text: merk),
+            onChanged: (val){
+              merk = val;
+            },
             validator: (val) => val.isEmpty ? "Kolom harus diisi" : null,
             onSaved: (val) => merk = val,
           )
@@ -1374,6 +1459,9 @@ class _EditLetterState extends State<EditLetter> {
               helperText: "Tipe",
             ),
             controller: TextEditingController(text: tipe),
+            onChanged: (val){
+              tipe = val;
+            },
             validator: (val) => val.isEmpty ? "Kolom harus diisi" : null,
             onSaved: (val) => tipe = val,
           )
@@ -1387,6 +1475,9 @@ class _EditLetterState extends State<EditLetter> {
               helperText: "Jenis",
             ),
             controller: TextEditingController(text: jenis),
+            onChanged: (val){
+              jenis = val;
+            },
             validator: (val) => val.isEmpty ? "Kolom harus diisi" : null,
             onSaved: (val) => jenis = val,
           )
@@ -1401,6 +1492,9 @@ class _EditLetterState extends State<EditLetter> {
               helperText: "Tahun Pembuatan",
             ),
             controller: TextEditingController(text: tahunBuat),
+            onChanged: (val){
+              tahunBuat = val;
+            },
             validator: (val) => val.isEmpty ? "Kolom harus diisi" : null,
             onSaved: (val) => tahunBuat = val,
           )
@@ -1415,6 +1509,9 @@ class _EditLetterState extends State<EditLetter> {
               helperText: "Tahun Perakitan",
             ),
             controller: TextEditingController(text: tahunRakit),
+            onChanged: (val){
+              tahunRakit = val;
+            },
             validator: (val) => val.isEmpty ? "Kolom harus diisi" : null,
             onSaved: (val) => tahunRakit = val,
           )
@@ -1428,6 +1525,9 @@ class _EditLetterState extends State<EditLetter> {
               helperText: "Isi Silinder",
             ),
             controller: TextEditingController(text: isiSilinder),
+            onChanged: (val){
+              isiSilinder = val;
+            },
             validator: (val) => val.isEmpty ? "Kolom harus diisi" : null,
             onSaved: (val) => isiSilinder = val,
           )
@@ -1441,6 +1541,9 @@ class _EditLetterState extends State<EditLetter> {
               helperText: "Warna",
             ),
             controller: TextEditingController(text: warnaKendaraan),
+            onChanged: (val){
+              warnaKendaraan = val;
+            },
             validator: (val) => val.isEmpty ? "Kolom harus diisi" : null,
             onSaved: (val) => warnaKendaraan = val,
           )
@@ -1454,6 +1557,9 @@ class _EditLetterState extends State<EditLetter> {
               helperText: "Nomor Rangka",
             ),
             controller: TextEditingController(text: nomorRangka),
+            onChanged: (val){
+              nomorRangka = val;
+            },
             validator: (val) => val.isEmpty ? "Kolom harus diisi" : null,
             onSaved: (val) => nomorRangka = val,
           )
@@ -1467,6 +1573,9 @@ class _EditLetterState extends State<EditLetter> {
               helperText: "Nomor Mesin",
             ),
             controller: TextEditingController(text: nomorMesin),
+            onChanged: (val){
+              nomorMesin = val;
+            },
             validator: (val) => val.isEmpty ? "Kolom harus diisi" : null,
             onSaved: (val) => nomorMesin = val,
           )
@@ -1480,6 +1589,9 @@ class _EditLetterState extends State<EditLetter> {
               helperText: "Nomor BPKB",
             ),
             controller: TextEditingController(text: nomorBPKB),
+            onChanged: (val){
+              nomorBPKB = val;
+            },
             validator: (val) => val.isEmpty ? "Kolom harus diisi" : null,
             onSaved: (val) => nomorBPKB = val,
           )
@@ -1493,6 +1605,9 @@ class _EditLetterState extends State<EditLetter> {
               helperText: "Atas Nama BPKB",
             ),
             controller: TextEditingController(text: atasNamaBPKB),
+            onChanged: (val){
+              atasNamaBPKB = val;
+            },
             validator: (val) => val.isEmpty ? "Kolom harus diisi" : null,
             onSaved: (val) => atasNamaBPKB = val,
           )
@@ -1775,6 +1890,4 @@ class _EditLetterState extends State<EditLetter> {
       );
     }
   }
-
-
 }

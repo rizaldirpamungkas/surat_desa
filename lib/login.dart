@@ -35,18 +35,22 @@ class _LoginState extends State<Login> {
           return Future.value(true);
         },
         child: Scaffold(
-        body: Center(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 30),
-            child: Stack(
-              children: <Widget>[
-                showCircularProgress(),
-                showForm()
-              ],
-            )
-          )
-        ),
+        body: fullBody(),
       ),
+    );
+  }
+
+  Widget fullBody(){
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 30),
+        child: Stack(
+          children: <Widget>[
+            showCircularProgress(),
+            showForm()
+          ],
+        )
+      )
     );
   }
 
@@ -184,7 +188,7 @@ class _LoginState extends State<Login> {
                   )
                 ),
       onPressed: (){
-        
+        Navigator.of(context).pushNamed("/registration");
       },
     );
   }

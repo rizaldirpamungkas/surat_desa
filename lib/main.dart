@@ -6,6 +6,7 @@ import 'package:surat_desa/login.dart';
 import 'package:surat_desa/notification.dart';
 import 'package:surat_desa/profile_settings.dart';
 import 'package:surat_desa/settings.dart';
+import 'package:surat_desa/sign_up.dart';
 import 'new_letter.dart';
 import 'history_letter.dart';
 import 'home.dart';
@@ -31,6 +32,25 @@ class MyApp extends StatelessWidget {
           case '/home':
             return PageRouteBuilder(
               pageBuilder: (context, animation, secondaryAnimation) => Home(),
+              transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                return ScaleTransition(
+                  scale: Tween<double>(
+                    begin: 0.0,
+                    end: 1.0,
+                  ).animate(
+                    CurvedAnimation(
+                      parent: animation,
+                      curve: Curves.fastOutSlowIn,
+                    ),
+                  ),
+                  child: child,
+                );
+              },
+            );
+            break;
+          case '/registration':
+            return PageRouteBuilder(
+              pageBuilder: (context, animation, secondaryAnimation) => SignUp(),
               transitionsBuilder: (context, animation, secondaryAnimation, child) {
                 return ScaleTransition(
                   scale: Tween<double>(

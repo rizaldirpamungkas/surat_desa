@@ -1,27 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:http/http.dart' as http;
 
-class ProfileSettings extends StatefulWidget {
+class SignUp extends StatefulWidget {
   @override
-  _ProfileSettingsState createState() => _ProfileSettingsState();
+  _SignUpState createState() => _SignUpState();
 }
 
-class _ProfileSettingsState extends State<ProfileSettings> {
-
+class _SignUpState extends State<SignUp> {
+  
   final formKey = new GlobalKey<FormState>();
   bool isLoading = false;
 
-  String nama, tempatLahir, agama, kebangsaan, statNikah, tanggalLahir, idWarga;
-  String pekerjaan, alamat, jenKel, nik, username, pass, passIn, kontak;
-
-  @override
-  void initState() {
-    setPref();
-    super.initState();
-  }
+  String nama, tempatLahir, agama, kebangsaan, statNikah, tanggalLahir;
+  String pekerjaan, alamat, jenKel, nik, username, pass, passKonfirm, kontak;
 
   @override
   Widget build(BuildContext context) {
@@ -31,7 +24,7 @@ class _ProfileSettingsState extends State<ProfileSettings> {
   Widget appBody(){
     return Scaffold(
       appBar: AppBar(
-        title: Text("Pengaturan Profil"),
+        title: Text("Daftar"),
         iconTheme: IconThemeData(
           color: Colors.white
         ),
@@ -97,7 +90,7 @@ class _ProfileSettingsState extends State<ProfileSettings> {
         setData();
       }else{
         Fluttertoast.showToast(
-          msg: "Password Salah",
+          msg: "Password Tidak Sama",
           toastLength: Toast.LENGTH_LONG,
           gravity: ToastGravity.BOTTOM
         );
@@ -114,8 +107,7 @@ class _ProfileSettingsState extends State<ProfileSettings> {
       );
     }else{
       Map<String,Object> data = {
-        "id_warga": idWarga, 
-        "password": passIn,
+        "password": pass,
         "username": username,
         "nama": nama,
         "tempat_lahir": tempatLahir,
@@ -135,32 +127,11 @@ class _ProfileSettingsState extends State<ProfileSettings> {
   }
 
   bool checkPass(){
-    if(passIn == pass){
+    if(passKonfirm == pass){
       return true;
     }else{
       return false;
     }
-  }
-
-  void setPref() async{
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    
-    setState(() {
-      username = prefs.getString("userWarga");
-      pass = prefs.getString("pass");
-      nama = prefs.getString("namaWarga");
-      tempatLahir = prefs.getString("tempatLahir");
-      tanggalLahir = prefs.getString("tanggalLahir");
-      agama = prefs.getString("agama");
-      kebangsaan = prefs.getString("kebangsaan");
-      statNikah = prefs.getString("statusPernikahan");
-      kontak = prefs.getString("kontak");
-      pekerjaan = prefs.getString("pekerjaan");
-      alamat = prefs.getString("alamat");
-      jenKel = prefs.getString("jenisKelamin");
-      nik = prefs.getString("nik");
-      idWarga = prefs.getString("idWarga");
-    });
   }
 
   Widget showFormContainer(){
@@ -184,16 +155,9 @@ class _ProfileSettingsState extends State<ProfileSettings> {
           leading: Icon(Icons.supervised_user_circle),
           title: new TextFormField(
             maxLines: 1,
-            textCapitalization: TextCapitalization.words,
-            controller: TextEditingController(
-              text: username
-            ),
             decoration: InputDecoration(
               helperText: "Username"
             ),
-            onChanged: (val){
-              username = val;
-            },
             validator: (val) => val.isEmpty ? "Kolom harus diisi" : null,
             onSaved: (val) => username = val,
           ),
@@ -203,12 +167,23 @@ class _ProfileSettingsState extends State<ProfileSettings> {
           title: new TextFormField(
             obscureText: true,
             maxLines: 1,
-            textCapitalization: TextCapitalization.words,
             decoration: InputDecoration(
               helperText: "Password"
             ),
             validator: (val) => val.isEmpty ? "Kolom harus diisi" : null,
-            onSaved: (val) => passIn = val.trim(),
+            onSaved: (val) => pass = val.trim(),
+          ),
+        ),
+        ListTile(
+          leading: Icon(Icons.lock_outline),
+          title: new TextFormField(
+            obscureText: true,
+            maxLines: 1,
+            decoration: InputDecoration(
+              helperText: "Konfirmasi Password"
+            ),
+            validator: (val) => val.isEmpty ? "Kolom harus diisi" : null,
+            onSaved: (val) => passKonfirm = val.trim(),
           ),
         ),
         ListTile(
@@ -216,15 +191,9 @@ class _ProfileSettingsState extends State<ProfileSettings> {
           title: new TextFormField(
             maxLines: 1,
             textCapitalization: TextCapitalization.words,
-            controller: TextEditingController(
-              text: nama
-            ),
             decoration: InputDecoration(
               helperText: "Nama"
             ),
-            onChanged: (val){
-              nama = val;
-            },
             validator: (val) => val.isEmpty ? "Kolom harus diisi" : null,
             onSaved: (val) => nama = val,
           ),
@@ -234,15 +203,9 @@ class _ProfileSettingsState extends State<ProfileSettings> {
           title: TextFormField(
             maxLines: 1,
             textCapitalization: TextCapitalization.words,
-            controller: TextEditingController(
-              text: tempatLahir
-            ),
             decoration: InputDecoration(
               helperText: "Tempat Kelahiran",
             ),
-            onChanged: (val){
-              tempatLahir = val;
-            },
             validator: (val) => val.isEmpty ? "Kolom harus diisi" : null,
             onSaved: (val) => tempatLahir = val,
           ),
@@ -251,9 +214,6 @@ class _ProfileSettingsState extends State<ProfileSettings> {
           leading: Icon(Icons.cake),
           title: TextFormField(
             readOnly: true,
-            controller: TextEditingController(
-              text: tanggalLahir
-            ),
             decoration: InputDecoration(
               helperText: "Tanggal Lahir"
             ),
@@ -284,15 +244,9 @@ class _ProfileSettingsState extends State<ProfileSettings> {
           title: TextFormField(
             maxLines: 1,
             textCapitalization: TextCapitalization.words,
-            controller: TextEditingController(
-              text: agama
-            ),
             decoration: InputDecoration(
               helperText: "Agama",
             ),
-            onChanged: (val){
-              agama = val;
-            },
             validator: (val) => val.isEmpty ? "Kolom harus diisi" : null,
             onSaved: (val) => agama = val,
           ),
@@ -302,12 +256,6 @@ class _ProfileSettingsState extends State<ProfileSettings> {
           title: TextFormField(
             maxLines: 1,
             textCapitalization: TextCapitalization.words,
-            controller: TextEditingController(
-              text: kontak
-            ),
-            onChanged: (val){
-              kontak = val;
-            },
             decoration: InputDecoration(
               helperText: "Kontak",
             ),
@@ -374,15 +322,9 @@ class _ProfileSettingsState extends State<ProfileSettings> {
           title: TextFormField(
             maxLines: 1,
             textCapitalization: TextCapitalization.words,
-            controller: TextEditingController(
-              text: pekerjaan
-            ),
             decoration: InputDecoration(
               helperText: "Pekerjaan",
             ),
-            onChanged: (val){
-              pekerjaan = val;
-            },
             validator: (val) => val.isEmpty ? "Kolom harus diisi" : null,
             onSaved: (val) => pekerjaan = val,
           ),
@@ -392,15 +334,9 @@ class _ProfileSettingsState extends State<ProfileSettings> {
           title: TextFormField(
             maxLines: 1,
             textCapitalization: TextCapitalization.words,
-            controller: TextEditingController(
-              text: alamat
-            ),
             decoration: InputDecoration(
               helperText: "Alamat",
             ),
-            onChanged: (val){
-              alamat = val;
-            },
             validator: (val) => val.isEmpty ? "Kolom harus diisi" : null,
             onSaved: (val) => alamat = val,
           ),
@@ -434,12 +370,6 @@ class _ProfileSettingsState extends State<ProfileSettings> {
             keyboardType: TextInputType.number,
             maxLines: 1,
             textCapitalization: TextCapitalization.words,
-            controller: TextEditingController(
-              text: nik
-            ),
-            onChanged: (val){
-              nik = val;
-            },
             decoration: InputDecoration(
               helperText: "NIK",
             ),
@@ -458,7 +388,7 @@ class _ProfileSettingsState extends State<ProfileSettings> {
         "x-api-key": "5baa441c93eaa4d6fb824dfc561a96d6",
         "Content-Type": "application/x-www-form-urlencoded"};
 
-      String formURI = "https://www.terraciv.me/api/update_data_warga";
+      String formURI = "https://www.terraciv.me/api/daftar_warga";
 
       http.Response data = await http.post(formURI, body: body, headers: header).timeout(
         Duration(seconds: 300),
@@ -480,7 +410,6 @@ class _ProfileSettingsState extends State<ProfileSettings> {
       });
 
       if(data.statusCode == 200){
-        setUserPreferences();
         Fluttertoast.showToast(
           msg: "Data Berhasil Dikirim",
           toastLength: Toast.LENGTH_LONG,
@@ -501,24 +430,6 @@ class _ProfileSettingsState extends State<ProfileSettings> {
         gravity: ToastGravity.BOTTOM
       );
     }
-  }
-
-  void setUserPreferences() async{
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    prefs.setString("idWarga", idWarga);
-    prefs.setString("userWarga", username);
-    prefs.setString("namaWarga", nama);
-    prefs.setString("tempatLahir", tempatLahir);
-    prefs.setString("tanggalLahir", tanggalLahir);
-    prefs.setString("agama", agama);
-    prefs.setString("kebangsaan", kebangsaan);
-    prefs.setString("statusPernikahan", statNikah);
-    prefs.setString("pekerjaan", pekerjaan);
-    prefs.setString("alamat", alamat);
-    prefs.setString("jenisKelamin", jenKel);
-    prefs.setString("kontak", kontak);
-    prefs.setString("nik", nik);
-    prefs.setString("pass", passIn);
   }
 
 }
