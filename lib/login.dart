@@ -100,10 +100,26 @@ class _LoginState extends State<Login> {
               signInButton(),
               spliter(),
               signUpButton(),
+              showHelp(),
               showErrorMessage()
             ],
         ),
       ),
+    );
+  }
+
+  Widget showHelp(){
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.start,
+      children: <Widget>[
+        Container(
+          margin: EdgeInsets.only(top: 0),
+          child: IconButton(icon: Icon(Icons.help_outline, color: Theme.of(context).primaryColor), 
+          onPressed: (){
+            Navigator.pushNamed(context, "/help");
+          }),
+        ),
+      ],
     );
   }
 

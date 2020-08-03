@@ -46,23 +46,23 @@ class _NotificationsState extends State<Notifications> {
 
   Widget appBody(){
     return Scaffold(
-        appBar: AppBar(
-          backgroundColor: Colors.transparent,
-          elevation: 0,
-          title: Text("Notifikasi"),
-          iconTheme: IconThemeData(
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        title: Text("Notifikasi"),
+        iconTheme: IconThemeData(
+          color: Color(0xFF18D191)
+        ),
+        textTheme: TextTheme(
+          title: TextStyle(
+            fontSize: 20,
             color: Color(0xFF18D191)
           ),
-          textTheme: TextTheme(
-            title: TextStyle(
-              fontSize: 20,
-              color: Color(0xFF18D191)
-            ),
-          )
-        ),
-        body: Center(
-          child: Text("Belum ada data"),
         )
-      );
+      ),
+      body: Center(
+        child: Text("Belum ada data"),
+      )
+    );
   }
 }

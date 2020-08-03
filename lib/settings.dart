@@ -78,6 +78,30 @@ class Settings extends StatelessWidget {
         InkWell(
           child: ListTile(
             leading: Icon(
+              Icons.help_outline  
+            ),
+            title: Text(
+              "Bantuan",
+              style: TextStyle(
+                fontFamily: 'Montserrat', 
+                fontSize: 20.0,
+                color: Colors.grey[600],
+                fontWeight: FontWeight.w500,
+                letterSpacing: 1.5
+              ),
+            ),
+          ),
+          onTap: (){
+            Navigator.pushNamed(context, "/help");
+          },
+        ),
+        Divider(
+          thickness: 1, 
+          indent: 70,
+        ),
+        InkWell(
+          child: ListTile(
+            leading: Icon(
               Icons.exit_to_app  
             ),
             title: Text(

@@ -1,7 +1,13 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:http/http.dart' as http;
+import 'package:image_picker/image_picker.dart';
+import 'package:http_parser/http_parser.dart';
+import 'package:mime/mime.dart';
+import 'dart:convert';
 
 class SignUp extends StatefulWidget {
   @override
@@ -10,6 +16,9 @@ class SignUp extends StatefulWidget {
 
 class _SignUpState extends State<SignUp> {
   
+  File imageFile;
+  bool isUploading = false;
+
   final formKey = new GlobalKey<FormState>();
   bool isLoading = false;
 
@@ -84,10 +93,18 @@ class _SignUpState extends State<SignUp> {
 
     if (validateAndSave()) {
       if(checkPass()){
-        setState(() {
-          isLoading = true;
-        });
-        setData();
+        if(checkImage()){
+          setState(() {
+            isLoading = true;
+          });
+          setData();
+        }else{
+          Fluttertoast.showToast(
+            msg: "Harap Pilih Gambar",
+            toastLength: Toast.LENGTH_LONG,
+            gravity: ToastGravity.BOTTOM
+          );
+        }
       }else{
         Fluttertoast.showToast(
           msg: "Password Tidak Sama",
@@ -128,6 +145,14 @@ class _SignUpState extends State<SignUp> {
 
   bool checkPass(){
     if(passKonfirm == pass){
+      return true;
+    }else{
+      return false;
+    }
+  }
+
+  bool checkImage(){
+    if(imageFile != null){
       return true;
     }else{
       return false;
@@ -214,6 +239,9 @@ class _SignUpState extends State<SignUp> {
           leading: Icon(Icons.cake),
           title: TextFormField(
             readOnly: true,
+            controller: TextEditingController(
+              text: tanggalLahir
+            ),
             decoration: InputDecoration(
               helperText: "Tanggal Lahir"
             ),
@@ -377,10 +405,131 @@ class _SignUpState extends State<SignUp> {
             onSaved: (val) => nik = val,
           ),
         ),
+        Column(
+          children: <Widget>[
+            Padding(
+              padding: const EdgeInsets.only(top: 40.0, left: 10.0, right: 10.0),
+              child: OutlineButton(
+                onPressed: () => openImagePickerModal(context),
+                borderSide:
+                    BorderSide(color: Theme.of(context).primaryColor, width: 1.0),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: <Widget>[
+                    Icon(Icons.camera_alt),
+                    SizedBox(
+                      width: 5.0,
+                    ),
+                    Text('Ambil Photo KTP'),
+                  ],
+                ),
+              ),
+            ),
+            imageFile == null
+                ? Text('Silahkan Ambil Gambar')
+                : Image.file(
+                    imageFile,
+                    fit: BoxFit.contain,
+                    height: 300.0,
+                    alignment: Alignment.topCenter,
+                    width: MediaQuery.of(context).size.width,
+                  ),
+          ],
+        ),
       ],
     );
   }
 
+  Widget buildUploadBtn() {
+    Widget btnWidget = Container();
+
+    if (isUploading) {
+      // File is being uploaded then show a progress indicator
+      btnWidget = Container(
+          margin: EdgeInsets.only(top: 10.0),
+          child: CircularProgressIndicator());
+    } else if (!isUploading && imageFile != null) {
+      // If image is picked by the user then show a upload btn
+      btnWidget = Container(
+        margin: EdgeInsets.only(top: 10.0),
+        child: RaisedButton(
+          child: Text('Upload'),
+          onPressed: () {
+            startUploading();
+          },
+          color: Colors.pinkAccent,
+          textColor: Colors.white,
+        ),
+      );
+    }
+
+    return btnWidget;
+  }
+
+  Future<Map<String, dynamic>> uploadImage(File image) async {
+    setState(() {
+      isUploading = true;
+    });
+    // Find the mime type of the selected file by looking at the header bytes of the file
+    final mimeTypeData =
+        lookupMimeType(image.path, headerBytes: [0xFF, 0xD8]).split('/');
+    // Intilize the multipart request
+    final imageUploadRequest =
+        http.MultipartRequest('POST', Uri.parse("baseUrl"));
+    // Attach the file in the request
+    final file = await http.MultipartFile.fromPath('image', image.path,
+        contentType: MediaType(mimeTypeData[0], mimeTypeData[1]));
+    // Explicitly pass the extension of the image with request body
+    // Since image_picker has some bugs due which it mixes up
+    // image extension with file name like this filenamejpge
+    // Which creates some problem at the server side to manage
+    // or verify the file extension
+    imageUploadRequest.fields['ext'] = mimeTypeData[1];
+    imageUploadRequest.files.add(file);
+    try {
+      final streamedResponse = await imageUploadRequest.send();
+      final response = await http.Response.fromStream(streamedResponse);
+      if (response.statusCode != 200) {
+        return null;
+      }
+      final Map<String, dynamic> responseData = json.decode(response.body);
+      resetState();
+      return responseData;
+    } catch (e) {
+      print(e);
+      return null;
+    }
+  }
+
+  void startUploading() async {
+    final Map<String, dynamic> response = await uploadImage(imageFile);
+    print(response);
+    // Check if any error occured
+    if (response == null || response.containsKey("error")) {
+      Fluttertoast.showToast(msg: "Image Upload Failed!!!",
+          toastLength: Toast.LENGTH_LONG, gravity: ToastGravity.BOTTOM);
+    } else {
+      Fluttertoast.showToast(msg: "Image Uploaded Successfully!!!",
+          toastLength: Toast.LENGTH_LONG, gravity: ToastGravity.BOTTOM);
+    }
+  }
+
+  void resetState() {
+    setState(() {
+      isUploading = false;
+      imageFile = null;
+    });
+  }
+
+  void getImage(BuildContext context, ImageSource source) async {
+    File image = await ImagePicker.pickImage(source: source);
+    setState(() {
+      imageFile = image;
+    });
+    // Closes the bottom sheet
+    Navigator.pop(context);
+  }
+ 
   void submitForm(Map<String, Object> body) async{
     try{
       
@@ -390,35 +539,49 @@ class _SignUpState extends State<SignUp> {
 
       String formURI = "https://www.terraciv.me/api/daftar_warga";
 
-      http.Response data = await http.post(formURI, body: body, headers: header).timeout(
-        Duration(seconds: 300),
-        onTimeout: (){
-          isLoading = false;
+      final mimeTypeData = lookupMimeType(imageFile.path, headerBytes: [0xFF, 0xD8]).split('/');
+      final daftarRequest = http.MultipartRequest('POST', Uri.parse(formURI));
+      final file = await http.MultipartFile.fromPath('image', imageFile.path,
+          contentType: MediaType(mimeTypeData[0], mimeTypeData[1]));
 
-          Fluttertoast.showToast(
-            msg: "Timeout Koneksi",
-            toastLength: Toast.LENGTH_LONG,
-            gravity: ToastGravity.BOTTOM
-          );
+      daftarRequest.headers.addAll(header);
+      daftarRequest.fields['ext'] = mimeTypeData[1];
+      daftarRequest.fields['password'] = body["password"];
+      daftarRequest.fields['username'] = body["username"];
+      daftarRequest.fields['nama'] = body["nama"];
+      daftarRequest.fields['tempat_lahir'] = body["tempat_lahir"];
+      daftarRequest.fields['tanggal_lahir'] = body["tanggal_lahir"];
+      daftarRequest.fields['agama'] = body["agama"];
+      daftarRequest.fields['kebangsaan'] = body["kebangsaan"];
+      daftarRequest.fields['status_pernikahan'] = body["status_pernikahan"];
+      daftarRequest.fields['pekerjaan'] = body["pekerjaan"];
+      daftarRequest.fields['alamat'] = body["alamat"];
+      daftarRequest.fields['jenis_kelamin'] = body["jenis_kelamin"];
+      daftarRequest.fields['nik'] = body["nik"];
+      daftarRequest.fields['kontak'] = body["kontak"];
+      daftarRequest.files.add(file);
+      
+      try {
+        await daftarRequest.send().then((onValue){
+          if(onValue.statusCode == 200){
+            Fluttertoast.showToast(
+              msg: "Data Berhasil Dikirim",
+              toastLength: Toast.LENGTH_LONG,
+              gravity: ToastGravity.BOTTOM
+            );
 
-          return null;
-        }
-      );
+            Navigator.of(context).pop();
+          }
+        });
+        
+      } catch (e) {
+        print(e);
+      }
 
       setState(() {
         isLoading = false;
       });
 
-      if(data.statusCode == 200){
-        Fluttertoast.showToast(
-          msg: "Data Berhasil Dikirim",
-          toastLength: Toast.LENGTH_LONG,
-          gravity: ToastGravity.BOTTOM
-        );
-        Navigator.of(context).pop();
-      }else{
-        
-      }
     }catch(e){
       setState(() {
         isLoading = false;
@@ -432,4 +595,40 @@ class _SignUpState extends State<SignUp> {
     }
   }
 
+  void openImagePickerModal(BuildContext context){
+    showModalBottomSheet(
+      context: context, 
+      builder: (BuildContext context) {
+        return Container(
+          height: 150.0,
+          padding: EdgeInsets.all(10.0),
+          child: Column(
+            children: <Widget>[
+              Text(
+                'Ambil Gambar',
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
+              SizedBox(
+                height: 10.0,
+              ),
+              FlatButton(
+                textColor: Theme.of(context).primaryColor,
+                child: Text('Gunakan Kamera'),
+                onPressed: () {
+                  getImage(context, ImageSource.camera);
+                },
+              ),
+              FlatButton(
+                textColor: Theme.of(context).primaryColor,
+                child: Text('Gunakan Galeri'),
+                onPressed: () {
+                  getImage(context, ImageSource.gallery);
+                },
+              ),
+            ],
+          ),
+        );
+      }
+    );
+  }
 }

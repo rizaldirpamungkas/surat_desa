@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:surat_desa/change_pass_settings.dart';
 import 'package:surat_desa/detail_letter.dart';
 import 'package:surat_desa/edit_letter.dart';
+import 'package:surat_desa/help.dart';
 import 'package:surat_desa/login.dart';
 import 'package:surat_desa/notification.dart';
 import 'package:surat_desa/profile_settings.dart';
@@ -51,6 +52,25 @@ class MyApp extends StatelessWidget {
           case '/registration':
             return PageRouteBuilder(
               pageBuilder: (context, animation, secondaryAnimation) => SignUp(),
+              transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                return ScaleTransition(
+                  scale: Tween<double>(
+                    begin: 0.0,
+                    end: 1.0,
+                  ).animate(
+                    CurvedAnimation(
+                      parent: animation,
+                      curve: Curves.fastOutSlowIn,
+                    ),
+                  ),
+                  child: child,
+                );
+              },
+            );
+            break;
+          case '/help':
+            return PageRouteBuilder(
+              pageBuilder: (context, animation, secondaryAnimation) => Help(),
               transitionsBuilder: (context, animation, secondaryAnimation, child) {
                 return ScaleTransition(
                   scale: Tween<double>(

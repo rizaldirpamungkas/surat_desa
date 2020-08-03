@@ -3,6 +3,36 @@ import 'package:flutter/material.dart';
 class Logo extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
+    return newLogo();
+  }
+
+  Widget newLogo(){
+    return Column(
+      children: <Widget>[
+        Container(
+          height: 178,
+          width: 178,
+          child: Image.asset('res/images/logo.jpg'),
+        ),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            Text(
+              "E-Desa Jenggala",
+              style: TextStyle(
+                fontSize: 30,
+                color: Colors.black45,
+                fontWeight: FontWeight.w300,
+                letterSpacing: 0.3
+              ),
+            ),
+          ],
+        )
+      ],
+    );
+  }
+
+  Widget oldLogo(){
     return Column(      
       children: <Widget>[
         Stack(
