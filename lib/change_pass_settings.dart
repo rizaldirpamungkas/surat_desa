@@ -33,7 +33,7 @@ class _ChangePassState extends State<ChangePass> {
           color: Colors.white
         ),
         textTheme: TextTheme(
-          title: TextStyle(
+          headline6: TextStyle(
             fontSize: 20
           )
         ),

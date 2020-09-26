@@ -43,6 +43,8 @@ class _EditLetterState extends State<EditLetter> {
   String namaAnak, tempatLahirAnak, agamaAnak, pekerjaanAnak, alamatAnak;
   String jenisKegiatan, namaInstansiKegiatan, alamatInstansi, namaKades;
   String namaDesa, namaDusun, namaKadus;
+  String hewan, umurHewan, warnaBulu, warnaEkor, tipeTanduk, warnaKaki, tandaLain, alasanPemotongan;
+  String pemberiWaris, keteranganPemberiWaris;
 
   _EditLetterState(this.surat);
 
@@ -159,6 +161,24 @@ class _EditLetterState extends State<EditLetter> {
           namaKadus = suratRaw["nama_kadus"];
         });
         break;
+      case "Keterangan Pemotongan Hewan":
+        setState(() {
+          hewan = suratRaw["hewan"];
+          umurHewan = suratRaw["umur_hewan"];
+          warnaBulu = suratRaw["warna_bulu"];
+          warnaEkor = suratRaw["warna_ekor"];
+          warnaKaki = suratRaw["warna_kaki"];
+          tipeTanduk = suratRaw["tipe_tanduk"];
+          tandaLain = suratRaw["tanda_lain"];
+          alasanPemotongan = suratRaw["alasan_pemotongan"];
+        });
+        break;
+      case "Keterangan Ahli Waris":
+        setState(() {
+          pemberiWaris = suratRaw["pemberi_waris"];
+          keteranganPemberiWaris = suratRaw["keterangan_pemberi_waris"];
+        });
+        break;
     }
   }
 
@@ -175,7 +195,7 @@ class _EditLetterState extends State<EditLetter> {
             color: Colors.white
           ),
           textTheme: TextTheme(
-            title: TextStyle(
+            headline6: TextStyle(
               fontSize: 20
             )
           ),
@@ -296,7 +316,7 @@ class _EditLetterState extends State<EditLetter> {
         // errorMessage = "";
         isLoading = true;
       });
-      print("OK");
+
       setData();
     }
   }
@@ -341,6 +361,12 @@ class _EditLetterState extends State<EditLetter> {
         break;
       case "Pertanggungjawaban Orang Tua":
         return formTanggungJawabOrtu();
+        break;
+      case "Keterangan Pemotongan Hewan":
+        return formKeteranganPemotonganHewan();
+        break;
+      case "Keterangan Ahli Waris":
+        return formKeteranganAhliWaris();
         break;
       default: return SizedBox.shrink();
     }
@@ -1616,6 +1642,176 @@ class _EditLetterState extends State<EditLetter> {
     );
   }
 
+  Widget formKeteranganPemotonganHewan(){
+    return Column(
+      children: <Widget>[
+        ListTile(
+         leading: Icon(Icons.pets), 
+         title: TextFormField(
+            maxLines: 1,
+            textCapitalization: TextCapitalization.words,
+            decoration: InputDecoration(
+              helperText: "Hewan",
+            ),
+            controller: TextEditingController(text: hewan),
+            onChanged: (val){ 
+              setState(() {
+                hewan = val;
+              });
+            },
+            validator: (val) => val.isEmpty ? "Kolom harus diisi" : null,
+            onSaved: (val) => hewan = val,
+          )
+        ),
+        ListTile(
+         leading: Icon(Icons.cake), 
+         title: TextFormField(
+            maxLines: 1,
+            textCapitalization: TextCapitalization.words,
+            decoration: InputDecoration(
+              helperText: "Umur Hewan",
+            ),
+            controller: TextEditingController(text: umurHewan),
+            onChanged: (val){ 
+              setState(() {
+                umurHewan = val;
+              });
+            },
+            validator: (val) => val.isEmpty ? "Kolom harus diisi" : null,
+            onSaved: (val) => umurHewan = val,
+          )
+        ),
+        ListTile(
+         leading: Icon(Icons.color_lens), 
+         title: TextFormField(
+            readOnly: true,
+            controller: TextEditingController(
+              text: warnaBulu
+            ),
+            decoration: InputDecoration(
+              helperText: "Warna Bulu"
+            ),
+            validator: (val) => val.isEmpty ? "Kolom harus diisi" : null,
+            onSaved: (val) => warnaBulu = val,
+          ),
+        ),
+        ListTile(
+         leading: Icon(Icons.color_lens), 
+         title: TextFormField(
+            readOnly: true,
+            controller: TextEditingController(
+              text: warnaEkor
+            ),
+            decoration: InputDecoration(
+              helperText: "Warna Ekor"
+            ),
+            validator: (val) => val.isEmpty ? "Kolom harus diisi" : null,
+            onSaved: (val) => warnaEkor = val,
+          ),
+        ),
+        ListTile(
+         leading: Icon(Icons.color_lens), 
+         title: TextFormField(
+            readOnly: true,
+            controller: TextEditingController(
+              text: warnaKaki
+            ),
+            decoration: InputDecoration(
+              helperText: "Warna Kaki"
+            ),
+            validator: (val) => val.isEmpty ? "Kolom harus diisi" : null,
+            onSaved: (val) => warnaKaki = val,
+          ),
+        ),
+        ListTile(
+         leading: Icon(Icons.arrow_drop_up), 
+         title: TextFormField(
+            readOnly: true,
+            controller: TextEditingController(
+              text: tipeTanduk
+            ),
+            decoration: InputDecoration(
+              helperText: "Tipe Tanduk"
+            ),
+            validator: (val) => val.isEmpty ? "Kolom harus diisi" : null,
+            onSaved: (val) => tipeTanduk = val,
+          ),
+        ),
+        ListTile(
+         leading: Icon(Icons.album), 
+         title: TextFormField(
+            readOnly: true,
+            controller: TextEditingController(
+              text: tandaLain
+            ),
+            decoration: InputDecoration(
+              helperText: "Tanda Lain"
+            ),
+            validator: (val) => val.isEmpty ? "Kolom harus diisi" : null,
+            onSaved: (val) => tandaLain = val,
+          ),
+        ),
+        ListTile(
+         leading: Icon(Icons.chat), 
+         title: TextFormField(
+            readOnly: true,
+            controller: TextEditingController(
+              text: alasanPemotongan
+            ),
+            decoration: InputDecoration(
+              helperText: "Alasan Pemotongan"
+            ),
+            validator: (val) => val.isEmpty ? "Kolom harus diisi" : null,
+            onSaved: (val) => alasanPemotongan = val,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget formKeteranganAhliWaris(){
+    return Column(
+      children: <Widget>[
+        ListTile(
+         leading: Icon(Icons.person), 
+         title: TextFormField(
+            maxLines: 1,
+            textCapitalization: TextCapitalization.words,
+            decoration: InputDecoration(
+              helperText: "Pemberi Waris",
+            ),
+            controller: TextEditingController(text: pemberiWaris),
+            onChanged: (val){ 
+              setState(() {
+                pemberiWaris = val;
+              });
+            },
+            validator: (val) => val.isEmpty ? "Kolom harus diisi" : null,
+            onSaved: (val) => pemberiWaris = val,
+          )
+        ),
+        ListTile(
+         leading: Icon(Icons.chat), 
+         title: TextFormField(
+            maxLines: 1,
+            textCapitalization: TextCapitalization.words,
+            decoration: InputDecoration(
+              helperText: "Keterangan Pemberi Waris",
+            ),
+            controller: TextEditingController(text: keteranganPemberiWaris),
+            onChanged: (val){ 
+              setState(() {
+                keteranganPemberiWaris = val;
+              });
+            },
+            validator: (val) => val.isEmpty ? "Kolom harus diisi" : null,
+            onSaved: (val) => keteranganPemberiWaris = val,
+          )
+        )
+      ]
+    );
+  }
+
   void setData(){
     if(jenKel == null || kebangsaan == null || statNikah == null){
       setState(() {
@@ -1655,7 +1851,6 @@ class _EditLetterState extends State<EditLetter> {
           };
 
           data.addAll(subData);
-          print(data);
           submitForm(data);
           break;
         case "Keterangan Kelakuan Baik" :
@@ -1671,7 +1866,6 @@ class _EditLetterState extends State<EditLetter> {
             };
 
             data.addAll(subData);
-            print(data);
             submitForm(data);
           }else{
             setState(() {
@@ -1704,7 +1898,6 @@ class _EditLetterState extends State<EditLetter> {
           };
 
           data.addAll(subData);
-          print(data);
           submitForm(data);
 
           break;
@@ -1715,7 +1908,6 @@ class _EditLetterState extends State<EditLetter> {
           };
 
           data.addAll(subData);
-          print(data);
           submitForm(data);
 
           break;
@@ -1731,7 +1923,6 @@ class _EditLetterState extends State<EditLetter> {
           };
 
           data.addAll(subData);
-          print(data);
           submitForm(data);
 
           break;
@@ -1768,7 +1959,6 @@ class _EditLetterState extends State<EditLetter> {
             };
 
             data.addAll(subData);
-            print(data);
             submitForm(data);
 
           }else{
@@ -1806,7 +1996,6 @@ class _EditLetterState extends State<EditLetter> {
             };
 
             data.addAll(subData);
-            print(data);
             submitForm(data);
 
           }else{
@@ -1820,6 +2009,34 @@ class _EditLetterState extends State<EditLetter> {
               gravity: ToastGravity.BOTTOM
             );
           }
+          break;
+        case "Keterangan Pemotongan Hewan":
+          subData = {
+            "tipe_surat": "Keterangan Pemotongan Hewan",
+            "hewan" : hewan,
+            "umur_hewan" : umurHewan,
+            "warna_bulu" : warnaBulu,
+            "warna_ekor" : warnaEkor,
+            "tipe_tanduk" : tipeTanduk,
+            "warna_kaki" : warnaKaki,
+            "tanda_lain" : tandaLain,
+            "alasan_pemotongan" : alasanPemotongan
+          };
+
+          data.addAll(subData);
+          submitForm(data);
+
+          break;
+        case "Keterangan Ahli Waris":
+          subData = {
+            "tipe_surat": "Keterangan Ahli Waris",
+            "pemberi_waris" : pemberiWaris,
+            "keterangan_pemberi_waris" : keteranganPemberiWaris,
+          };
+
+          data.addAll(subData);
+          submitForm(data);
+
           break;
         default:
       }

@@ -90,8 +90,6 @@ class _DetailLetterState extends State<DetailLetter> {
 
       String formURI = "https://www.terraciv.me/api/get_detail_surat";
       Map<String, Object> body = {"tipe" : surat.tipeSurat, "id_surat": surat.idSurat};
-      print("Det/"+surat.idSurat);
-      print("Det/"+surat.tipeSurat);
 
       http.Response data = await http.post(formURI, body: body, headers: header).timeout(
         Duration(seconds: 300),
@@ -195,6 +193,12 @@ class _DetailLetterState extends State<DetailLetter> {
         break;
       case "Pertanggungjawaban Orang Tua":
         return detailTanggungJawabOrtu();
+        break;
+      case "Keterangan Pemotongan Hewan":
+        return detailPotongHewan();
+        break;
+      case "Keterangan Ahli Waris":
+        return detailAhliWaris();
         break;
       default: return SizedBox.shrink();
     }
@@ -343,6 +347,39 @@ class _DetailLetterState extends State<DetailLetter> {
           point("Nama Desa", suratRaw["nama_desa"]),
           point("Nama Kadus", suratRaw["nama_kadus"]),
           point("Nama Dusun", suratRaw["nama_dusun"]),
+        ],
+      );
+    }else{
+      return SizedBox.shrink();
+    }
+  }
+
+  Widget detailPotongHewan(){
+    if(suratRaw != null){
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: <Widget>[
+          point("Hewan", suratRaw["hewan"]),
+          point("Umur Hewan", suratRaw["umur_hewan"]),
+          point("Warna Bulu", suratRaw["warna_bulu"]),
+          point("Warna Ekor", suratRaw["warna_ekor"]),
+          point("Warna Kaki", suratRaw["warna_kaki"]),
+          point("Tipe Tanduk", suratRaw["tipe_tanduk"]),
+          point("Alasan Pemotongan", suratRaw["alasan_pemotongan"]),
+        ],
+      );
+    }else{
+      return SizedBox.shrink();
+    }
+  }
+  
+  Widget detailAhliWaris(){
+    if(suratRaw != null){
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: <Widget>[
+          point("Pemberi Waris", suratRaw["pemberi_waris"]),
+          point("Keterangan Pemberi Waris", suratRaw["keterangan_pemberi_waris"]),
         ],
       );
     }else{

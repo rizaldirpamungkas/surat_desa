@@ -38,7 +38,7 @@ class _SignUpState extends State<SignUp> {
           color: Colors.white
         ),
         textTheme: TextTheme(
-          title: TextStyle(
+          headline6: TextStyle(
             fontSize: 20
           )
         ),

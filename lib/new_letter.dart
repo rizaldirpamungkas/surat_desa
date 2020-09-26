@@ -1,8 +1,10 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:intl/intl.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:http/http.dart' as http;
+import 'upload_prove.dart';
 
 class NewLetter extends StatefulWidget {
   @override
@@ -10,11 +12,11 @@ class NewLetter extends StatefulWidget {
 }
 
 class _NewLetterState extends State<NewLetter> {
-
   final formKey = new GlobalKey<FormState>();
 
   String letterType = "Surat Baru";
   String letterCode = "ket_pergi";
+  String idSurat = "";
   Widget form;
 
   bool isLoading = false;
@@ -36,6 +38,15 @@ class _NewLetterState extends State<NewLetter> {
   String namaAnak, tempatLahirAnak, agamaAnak, pekerjaanAnak, alamatAnak;
   String jenisKegiatan, namaInstansiKegiatan, alamatInstansi, namaKades;
   String namaDesa, namaDusun, namaKadus;
+  String hewan,
+      umurHewan,
+      warnaBulu,
+      warnaEkor,
+      tipeTanduk,
+      warnaKaki,
+      tandaLain;
+  String alasanPemotongan;
+  String pemberiWaris, keteranganPemberiWaris;
 
   @override
   void initState() {
@@ -49,31 +60,22 @@ class _NewLetterState extends State<NewLetter> {
     return fullBody();
   }
 
-  Widget fullBody(){
-    return Stack( 
-      children: <Widget>[
-        appBody(),
-        loadingScreen()
-      ],
+  Widget fullBody() {
+    return Stack(
+      children: <Widget>[appBody(), loadingScreen()],
     );
   }
 
-  Widget appBody(){
+  Widget appBody() {
     return Scaffold(
       appBar: AppBar(
         title: Text(letterType),
-        iconTheme: IconThemeData(
-          color: Colors.white
-        ),
-        textTheme: TextTheme(
-          title: TextStyle(
-            fontSize: 20
-          )
-        ),
+        iconTheme: IconThemeData(color: Colors.white),
+        textTheme: TextTheme(headline6: TextStyle(fontSize: 20)),
         actions: <Widget>[
           IconButton(
             icon: Icon(Icons.done),
-            onPressed: (){
+            onPressed: () {
               validateAndSubmit();
             },
           )
@@ -83,39 +85,32 @@ class _NewLetterState extends State<NewLetter> {
     );
   }
 
-  Widget loadingScreen(){
-    if(isLoading){
+  Widget loadingScreen() {
+    if (isLoading) {
       return SizedBox.expand(
-        child: Container(
-          color: Color.fromARGB(70, 255, 255, 255),
-          child: Center(
-            child: CircularProgressIndicator(),
-          ),
-        )
-      );
-    }else{
+          child: Container(
+        color: Color.fromARGB(70, 255, 255, 255),
+        child: Center(
+          child: CircularProgressIndicator(),
+        ),
+      ));
+    } else {
       return SizedBox.shrink();
     }
   }
 
-  Widget showForm(){
+  Widget showForm() {
     return Form(
-      key: formKey,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 5),
-        child: ListView(
-          children: <Widget>[
-            showFormChooseLet(),
-            showFormGeneral(),
-            form
-          ],
-        ),
-      )
-    );
+        key: formKey,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 5),
+          child: ListView(
+            children: [showFormChooseLet(), showFormGeneral(), form],
+          ),
+        ));
   }
 
-  void setForm(){
-    
+  void setForm() {
     switch (letterCode) {
       case "ket_pergi":
         setState(() {
@@ -123,8 +118,8 @@ class _NewLetterState extends State<NewLetter> {
           form = formBerpergian();
         });
         break;
-      
-      case "ket_kelakuan": 
+
+      case "ket_kelakuan":
         setState(() {
           letterType = "Keterangan Berkelakuan Baik";
           form = SizedBox.shrink();
@@ -180,11 +175,25 @@ class _NewLetterState extends State<NewLetter> {
         });
         break;
 
+      case "pot_hewan":
+        setState(() {
+          letterType = "Keterangan Pemotongan Hewan";
+          form = formKeteranganPemotonganHewan();
+        });
+        break;
+
+      case "li_waris":
+        setState(() {
+          letterType = "Keterangan Ahli Waris";
+          form = formKeteranganAhliWaris();
+        });
+        break;
+
       default:
     }
   }
 
-  Widget showFormChooseLet(){
+  Widget showFormChooseLet() {
     List<DropdownMenuItem> items;
 
     items = [
@@ -224,29 +233,35 @@ class _NewLetterState extends State<NewLetter> {
         value: "tang_ortu",
         child: Text("Pertanggungjawaban Orang Tua"),
       ),
+      DropdownMenuItem(
+        value: "pot_hewan",
+        child: Text("Keterangan Pemotongan Hewan"),
+      ),
+      DropdownMenuItem(
+        value: "li_waris",
+        child: Text("Keterangan Ahli Waris"),
+      ),
     ];
-    
+
     return ListTile(
-      leading: Icon(Icons.pageview),
-      title: DropdownButton(
-        isExpanded: true,
-        hint: Text("Jenis Surat"),
-        value: letterCode,
-        items: items,
-        onChanged: (val){
-          setState(() {
-            letterCode = val;
-            setForm();
-          });
-        },
-      )
-    );
-  
+        leading: Icon(Icons.pageview),
+        title: DropdownButton(
+          isExpanded: true,
+          hint: Text("Jenis Surat"),
+          value: letterCode,
+          items: items,
+          onChanged: (val) {
+            setState(() {
+              letterCode = val;
+              setForm();
+            });
+          },
+        ));
   }
 
-  void setPref() async{
+  void setPref() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    setState(() {  
+    setState(() {
       nama = prefs.getString("namaWarga");
       tempatLahir = prefs.getString("tempatLahir");
       tanggalLahir = prefs.getString("tanggalLahir");
@@ -261,7 +276,7 @@ class _NewLetterState extends State<NewLetter> {
     });
   }
 
-  Widget showFormGeneral(){
+  Widget showFormGeneral() {
     return Column(
       children: <Widget>[
         ListTile(
@@ -269,12 +284,8 @@ class _NewLetterState extends State<NewLetter> {
           title: new TextFormField(
             maxLines: 1,
             textCapitalization: TextCapitalization.words,
-            controller: TextEditingController(
-              text: nama
-            ),
-            decoration: InputDecoration(
-              helperText: "Nama"
-            ),
+            controller: TextEditingController(text: nama),
+            decoration: InputDecoration(helperText: "Nama"),
             validator: (val) => val.isEmpty ? "Kolom harus diisi" : null,
             onSaved: (val) => nama = val,
           ),
@@ -284,9 +295,7 @@ class _NewLetterState extends State<NewLetter> {
           title: TextFormField(
             maxLines: 1,
             textCapitalization: TextCapitalization.words,
-            controller: TextEditingController(
-              text: tempatLahir
-            ),
+            controller: TextEditingController(text: tempatLahir),
             decoration: InputDecoration(
               helperText: "Tempat Kelahiran",
             ),
@@ -298,25 +307,21 @@ class _NewLetterState extends State<NewLetter> {
           leading: Icon(Icons.cake),
           title: TextFormField(
             readOnly: true,
-            controller: TextEditingController(
-              text: tanggalLahir
-            ),
-            decoration: InputDecoration(
-              helperText: "Tanggal Lahir"
-            ),
-            onTap: (){
+            controller: TextEditingController(text: tanggalLahir),
+            decoration: InputDecoration(helperText: "Tanggal Lahir"),
+            onTap: () {
               showDatePicker(
                 context: context,
-                initialDate: DateTime.now().subtract(Duration(days: 365*18)),
+                initialDate: DateTime.now().subtract(Duration(days: 365 * 18)),
                 firstDate: DateTime(1900),
-                lastDate: DateTime.now().subtract(Duration(days: 360*18)),
-                builder: (BuildContext buildContext, Widget child){
+                lastDate: DateTime.now().subtract(Duration(days: 360 * 18)),
+                builder: (BuildContext buildContext, Widget child) {
                   return Theme(
                     data: ThemeData.light(),
                     child: child,
                   );
                 },
-              ).then((val){
+              ).then((val) {
                 setState(() {
                   tanggalLahir = DateFormat("yyyy-MM-dd").format(val);
                 });
@@ -331,9 +336,7 @@ class _NewLetterState extends State<NewLetter> {
           title: TextFormField(
             maxLines: 1,
             textCapitalization: TextCapitalization.words,
-            controller: TextEditingController(
-              text: agama
-            ),
+            controller: TextEditingController(text: agama),
             decoration: InputDecoration(
               helperText: "Agama",
             ),
@@ -357,8 +360,8 @@ class _NewLetterState extends State<NewLetter> {
                 child: Text("WNA"),
               ),
             ],
-            onChanged: (val){
-              setState(() {  
+            onChanged: (val) {
+              setState(() {
                 kebangsaan = val;
               });
             },
@@ -388,8 +391,8 @@ class _NewLetterState extends State<NewLetter> {
                 child: Text("Lajang"),
               )
             ],
-            onChanged: (val){
-              setState(() {  
+            onChanged: (val) {
+              setState(() {
                 statNikah = val;
               });
             },
@@ -400,9 +403,7 @@ class _NewLetterState extends State<NewLetter> {
           title: TextFormField(
             maxLines: 1,
             textCapitalization: TextCapitalization.words,
-            controller: TextEditingController(
-              text: pekerjaan
-            ),
+            controller: TextEditingController(text: pekerjaan),
             decoration: InputDecoration(
               helperText: "Pekerjaan",
             ),
@@ -415,9 +416,7 @@ class _NewLetterState extends State<NewLetter> {
           title: TextFormField(
             maxLines: 1,
             textCapitalization: TextCapitalization.words,
-            controller: TextEditingController(
-              text: alamat
-            ),
+            controller: TextEditingController(text: alamat),
             decoration: InputDecoration(
               helperText: "Alamat",
             ),
@@ -426,37 +425,34 @@ class _NewLetterState extends State<NewLetter> {
           ),
         ),
         ListTile(
-          leading: Icon(Icons.people),
-          title: DropdownButtonFormField(
-            isExpanded: true,
-            hint: Text("Jenis Kelamin"),
-            value: jenKel,
-            items: [
-              DropdownMenuItem(
-                value: "L",
-                child: Text("L"),
-              ),
-              DropdownMenuItem(
-                value: "P",
-                child: Text("P"),
-              ),
-            ],
-            onChanged: (val){
-              setState(() {  
-                jenKel = val;
-              });
-            },
-          )
-        ),
+            leading: Icon(Icons.people),
+            title: DropdownButtonFormField(
+              isExpanded: true,
+              hint: Text("Jenis Kelamin"),
+              value: jenKel,
+              items: [
+                DropdownMenuItem(
+                  value: "L",
+                  child: Text("L"),
+                ),
+                DropdownMenuItem(
+                  value: "P",
+                  child: Text("P"),
+                ),
+              ],
+              onChanged: (val) {
+                setState(() {
+                  jenKel = val;
+                });
+              },
+            )),
         ListTile(
           leading: Icon(Icons.credit_card),
           title: TextFormField(
             keyboardType: TextInputType.number,
             maxLines: 1,
             textCapitalization: TextCapitalization.words,
-            controller: TextEditingController(
-              text: nik
-            ),
+            controller: TextEditingController(text: nik),
             decoration: InputDecoration(
               helperText: "NIK",
             ),
@@ -492,7 +488,7 @@ class _NewLetterState extends State<NewLetter> {
     }
   }
 
-  Widget formKeteranganNikah(){
+  Widget formKeteranganNikah() {
     return Column(
       children: <Widget>[
         ListTile(
@@ -500,11 +496,9 @@ class _NewLetterState extends State<NewLetter> {
           title: new TextFormField(
             maxLines: 1,
             textCapitalization: TextCapitalization.words,
-            decoration: InputDecoration(
-              helperText: "Nama Pasangan"
-            ),
+            decoration: InputDecoration(helperText: "Nama Pasangan"),
             controller: TextEditingController(text: namaPasangan),
-            onChanged: (val){ 
+            onChanged: (val) {
               setState(() {
                 namaPasangan = val;
               });
@@ -522,9 +516,9 @@ class _NewLetterState extends State<NewLetter> {
               helperText: "Tempat Kelahiran Pasangan",
             ),
             controller: TextEditingController(text: tempatLahirPasangan),
-            onChanged: (val){ 
+            onChanged: (val) {
               setState(() {
-                tempatLahirPasangan= val;
+                tempatLahirPasangan = val;
               });
             },
             validator: (val) => val.isEmpty ? "Kolom harus diisi" : null,
@@ -535,25 +529,21 @@ class _NewLetterState extends State<NewLetter> {
           leading: Icon(Icons.cake),
           title: TextFormField(
             readOnly: true,
-            controller: TextEditingController(
-              text: tanggalLahirPasangan
-            ),
-            decoration: InputDecoration(
-              helperText: "Tanggal Lahir Pasangan"
-            ),
-            onTap: (){
+            controller: TextEditingController(text: tanggalLahirPasangan),
+            decoration: InputDecoration(helperText: "Tanggal Lahir Pasangan"),
+            onTap: () {
               showDatePicker(
                 context: context,
-                initialDate: DateTime.now().subtract(Duration(days: 365*18)),
+                initialDate: DateTime.now().subtract(Duration(days: 365 * 18)),
                 firstDate: DateTime(1900),
-                lastDate: DateTime.now().subtract(Duration(days: 360*18)),
-                builder: (BuildContext buildContext, Widget child){
+                lastDate: DateTime.now().subtract(Duration(days: 360 * 18)),
+                builder: (BuildContext buildContext, Widget child) {
                   return Theme(
                     data: ThemeData.light(),
                     child: child,
                   );
                 },
-              ).then((val){
+              ).then((val) {
                 setState(() {
                   tanggalLahirPasangan = DateFormat("yyyy-MM-dd").format(val);
                   setForm();
@@ -573,13 +563,13 @@ class _NewLetterState extends State<NewLetter> {
               helperText: "Agama Pasangan",
             ),
             controller: TextEditingController(text: agamaPasangan),
-            onChanged: (val){ 
+            onChanged: (val) {
               setState(() {
                 agamaPasangan = val;
               });
             },
             validator: (val) => val.isEmpty ? "Kolom harus diisi" : null,
-            onSaved: (val) => agamaPasangan= val,
+            onSaved: (val) => agamaPasangan = val,
           ),
         ),
         ListTile(
@@ -598,8 +588,8 @@ class _NewLetterState extends State<NewLetter> {
                 child: Text("WNA"),
               ),
             ],
-            onChanged: (val){
-              setState(() {  
+            onChanged: (val) {
+              setState(() {
                 kebangsaanPasangan = val;
                 setForm();
               });
@@ -615,7 +605,7 @@ class _NewLetterState extends State<NewLetter> {
               helperText: "Pekerjaan Pasangan",
             ),
             controller: TextEditingController(text: pekerjaanPasangan),
-            onChanged: (val){ 
+            onChanged: (val) {
               setState(() {
                 pekerjaanPasangan = val;
               });
@@ -633,7 +623,7 @@ class _NewLetterState extends State<NewLetter> {
               helperText: "Alamat Pasangan",
             ),
             controller: TextEditingController(text: alamatPasangan),
-            onChanged: (val){ 
+            onChanged: (val) {
               setState(() {
                 alamatPasangan = val;
               });
@@ -646,25 +636,21 @@ class _NewLetterState extends State<NewLetter> {
           leading: Icon(Icons.cake),
           title: TextFormField(
             readOnly: true,
-            controller: TextEditingController(
-              text: tanggalNikah
-            ),
-            decoration: InputDecoration(
-              helperText: "Tanggal Nikah"
-            ),
-            onTap: (){
+            controller: TextEditingController(text: tanggalNikah),
+            decoration: InputDecoration(helperText: "Tanggal Nikah"),
+            onTap: () {
               showDatePicker(
                 context: context,
                 initialDate: DateTime.now(),
                 firstDate: DateTime(1900),
                 lastDate: DateTime.now(),
-                builder: (BuildContext buildContext, Widget child){
+                builder: (BuildContext buildContext, Widget child) {
                   return Theme(
                     data: ThemeData.light(),
                     child: child,
                   );
                 },
-              ).then((val){
+              ).then((val) {
                 setState(() {
                   tanggalNikah = DateFormat("yyyy-MM-dd").format(val);
                   setForm();
@@ -684,9 +670,9 @@ class _NewLetterState extends State<NewLetter> {
               helperText: "Tempat Manikah",
             ),
             controller: TextEditingController(text: tempatMenikah),
-            onChanged: (val){ 
+            onChanged: (val) {
               setState(() {
-                tempatMenikah= val;
+                tempatMenikah = val;
               });
             },
             validator: (val) => val.isEmpty ? "Kolom harus diisi" : null,
@@ -697,7 +683,7 @@ class _NewLetterState extends State<NewLetter> {
     );
   }
 
-  Widget formTanggungJawabOrtu(){
+  Widget formTanggungJawabOrtu() {
     return Column(
       children: <Widget>[
         ListTile(
@@ -705,11 +691,9 @@ class _NewLetterState extends State<NewLetter> {
           title: new TextFormField(
             maxLines: 1,
             textCapitalization: TextCapitalization.words,
-            decoration: InputDecoration(
-              helperText: "Nama Anak"
-            ),
+            decoration: InputDecoration(helperText: "Nama Anak"),
             controller: TextEditingController(text: namaAnak),
-            onChanged: (val){ 
+            onChanged: (val) {
               setState(() {
                 namaAnak = val;
               });
@@ -727,7 +711,7 @@ class _NewLetterState extends State<NewLetter> {
               helperText: "Tempat Kelahiran Anak",
             ),
             controller: TextEditingController(text: tempatLahirAnak),
-            onChanged: (val){ 
+            onChanged: (val) {
               setState(() {
                 tempatLahirAnak = val;
               });
@@ -740,32 +724,28 @@ class _NewLetterState extends State<NewLetter> {
           leading: Icon(Icons.cake),
           title: TextFormField(
             readOnly: true,
-            controller: TextEditingController(
-              text: tanggalLahirAnak
-            ),
-            decoration: InputDecoration(
-              helperText: "Tanggal Lahir Anak"
-            ),
-            onTap: (){
+            controller: TextEditingController(text: tanggalLahirAnak),
+            decoration: InputDecoration(helperText: "Tanggal Lahir Anak"),
+            onTap: () {
               showDatePicker(
                 context: context,
                 initialDate: DateTime.now(),
                 firstDate: DateTime(1900),
                 lastDate: DateTime.now(),
-                builder: (BuildContext buildContext, Widget child){
+                builder: (BuildContext buildContext, Widget child) {
                   return Theme(
                     data: ThemeData.light(),
                     child: child,
                   );
                 },
-              ).then((val){
+              ).then((val) {
                 setState(() {
                   tanggalLahirAnak = DateFormat("yyyy-MM-dd").format(val);
                   setForm();
                 });
               });
             },
-            onChanged: (val){ 
+            onChanged: (val) {
               setState(() {
                 tanggalLahirAnak = val;
               });
@@ -775,29 +755,28 @@ class _NewLetterState extends State<NewLetter> {
           ),
         ),
         ListTile(
-          leading: Icon(Icons.people),
-          title: DropdownButton(
-            isExpanded: true,
-            hint: Text("Jenis Kelamin Anak"),
-            value: jenKelAnak,
-            items: [
-              DropdownMenuItem(
-                value: "L",
-                child: Text("L"),
-              ),
-              DropdownMenuItem(
-                value: "P",
-                child: Text("P"),
-              ),
-            ],
-            onChanged: (val){
-              setState(() {  
-                jenKelAnak = val;
-                setForm();
-              });
-            },
-          )
-        ),
+            leading: Icon(Icons.people),
+            title: DropdownButton(
+              isExpanded: true,
+              hint: Text("Jenis Kelamin Anak"),
+              value: jenKelAnak,
+              items: [
+                DropdownMenuItem(
+                  value: "L",
+                  child: Text("L"),
+                ),
+                DropdownMenuItem(
+                  value: "P",
+                  child: Text("P"),
+                ),
+              ],
+              onChanged: (val) {
+                setState(() {
+                  jenKelAnak = val;
+                  setForm();
+                });
+              },
+            )),
         ListTile(
           leading: Icon(Icons.stars),
           title: TextFormField(
@@ -807,7 +786,7 @@ class _NewLetterState extends State<NewLetter> {
               helperText: "Agama Anak",
             ),
             controller: TextEditingController(text: agamaAnak),
-            onChanged: (val){ 
+            onChanged: (val) {
               setState(() {
                 agamaAnak = val;
               });
@@ -832,8 +811,8 @@ class _NewLetterState extends State<NewLetter> {
                 child: Text("WNA"),
               ),
             ],
-            onChanged: (val){
-              setState(() {  
+            onChanged: (val) {
+              setState(() {
                 kebangsaanAnak = val;
                 setForm();
               });
@@ -849,7 +828,7 @@ class _NewLetterState extends State<NewLetter> {
               helperText: "Pekerjaan Anak",
             ),
             controller: TextEditingController(text: pekerjaanAnak),
-            onChanged: (val){ 
+            onChanged: (val) {
               setState(() {
                 pekerjaanAnak = val;
               });
@@ -867,7 +846,7 @@ class _NewLetterState extends State<NewLetter> {
               helperText: "Alamat Anak",
             ),
             controller: TextEditingController(text: alamatAnak),
-            onChanged: (val){ 
+            onChanged: (val) {
               setState(() {
                 alamatAnak = val;
               });
@@ -885,7 +864,7 @@ class _NewLetterState extends State<NewLetter> {
               helperText: "Jenis Kegiatan",
             ),
             controller: TextEditingController(text: jenisKegiatan),
-            onChanged: (val){ 
+            onChanged: (val) {
               setState(() {
                 jenisKegiatan = val;
               });
@@ -903,7 +882,7 @@ class _NewLetterState extends State<NewLetter> {
               helperText: "Nama Instansi Kegiatan",
             ),
             controller: TextEditingController(text: namaInstansiKegiatan),
-            onChanged: (val){ 
+            onChanged: (val) {
               setState(() {
                 namaInstansiKegiatan = val;
               });
@@ -921,9 +900,9 @@ class _NewLetterState extends State<NewLetter> {
               helperText: "Alamat Instansi",
             ),
             controller: TextEditingController(text: alamatInstansi),
-            onChanged: (val){ 
+            onChanged: (val) {
               setState(() {
-                alamatInstansi= val;
+                alamatInstansi = val;
               });
             },
             validator: (val) => val.isEmpty ? "Kolom harus diisi" : null,
@@ -950,8 +929,8 @@ class _NewLetterState extends State<NewLetter> {
                 child: Text("Tiri"),
               ),
             ],
-            onChanged: (val){
-              setState(() {  
+            onChanged: (val) {
+              setState(() {
                 hubunganOrtu = val;
                 setForm();
               });
@@ -967,7 +946,7 @@ class _NewLetterState extends State<NewLetter> {
               helperText: "Nama Kepala Desa",
             ),
             controller: TextEditingController(text: namaKades),
-            onChanged: (val){ 
+            onChanged: (val) {
               setState(() {
                 namaKades = val;
               });
@@ -985,7 +964,7 @@ class _NewLetterState extends State<NewLetter> {
               helperText: "Nama Desa",
             ),
             controller: TextEditingController(text: namaDesa),
-            onChanged: (val){ 
+            onChanged: (val) {
               setState(() {
                 namaDesa = val;
               });
@@ -1003,7 +982,7 @@ class _NewLetterState extends State<NewLetter> {
               helperText: "Nama Dusun",
             ),
             controller: TextEditingController(text: namaDusun),
-            onChanged: (val){ 
+            onChanged: (val) {
               setState(() {
                 namaDusun = val;
               });
@@ -1021,7 +1000,7 @@ class _NewLetterState extends State<NewLetter> {
               helperText: "Nama Kepala Dusun",
             ),
             controller: TextEditingController(text: namaKadus),
-            onChanged: (val){ 
+            onChanged: (val) {
               setState(() {
                 namaKadus = val;
               });
@@ -1034,81 +1013,78 @@ class _NewLetterState extends State<NewLetter> {
     );
   }
 
-  Widget formBerpergian(){
+  Widget formBerpergian() {
     return Column(
       children: <Widget>[
         ListTile(
-         leading: Icon(Icons.map), 
-         title: TextFormField(
-            maxLines: 1,
-            textCapitalization: TextCapitalization.words,
-            controller: TextEditingController(text: daerahKeberadaan),
-            onChanged: (val){ 
-              setState(() {
-                daerahKeberadaan = val;
-              });
-            },
-            validator: (val) => val.isEmpty ? "Kolom harus diisi" : null,
-            onSaved: (val) => daerahKeberadaan = val,
-            decoration: InputDecoration(
-              helperText: "Daerah Keberadaan",
-            ),
-          )
-        ),
+            leading: Icon(Icons.map),
+            title: TextFormField(
+              maxLines: 1,
+              textCapitalization: TextCapitalization.words,
+              controller: TextEditingController(text: daerahKeberadaan),
+              onChanged: (val) {
+                setState(() {
+                  daerahKeberadaan = val;
+                });
+              },
+              validator: (val) => val.isEmpty ? "Kolom harus diisi" : null,
+              onSaved: (val) => daerahKeberadaan = val,
+              decoration: InputDecoration(
+                helperText: "Daerah Keberadaan",
+              ),
+            )),
         ListTile(
-         leading: Icon(Icons.timelapse), 
-         title: TextFormField(
-            maxLines: 1,
-            maxLength: 4,
-            keyboardType: TextInputType.number,
-            decoration: InputDecoration(
-              helperText: "Tahun Kepergian",
-            ),
-            controller: TextEditingController(text: tahunKepergian),
-            onChanged: (val){ 
-              setState(() {
-                tahunKepergian = val;
-              });
-            },
-            validator: (val) => val.isEmpty ? "Kolom harus diisi" : null,
-            onSaved: (val) => tahunKepergian = val,
-          )
-        ),
+            leading: Icon(Icons.timelapse),
+            title: TextFormField(
+              maxLines: 1,
+              maxLength: 4,
+              keyboardType: TextInputType.number,
+              decoration: InputDecoration(
+                helperText: "Tahun Kepergian",
+              ),
+              controller: TextEditingController(text: tahunKepergian),
+              onChanged: (val) {
+                setState(() {
+                  tahunKepergian = val;
+                });
+              },
+              validator: (val) => val.isEmpty ? "Kolom harus diisi" : null,
+              onSaved: (val) => tahunKepergian = val,
+            )),
       ],
     );
   }
-  
-  Widget formBebasPajak(){
+
+  Widget formBebasPajak() {
     return Column(
       children: <Widget>[
         ListTile(
-         leading: Icon(Icons.category), 
-         title: TextFormField(
-            maxLines: 1,
-            textCapitalization: TextCapitalization.words,
-            decoration: InputDecoration(
-              helperText: "Objek Bebas Pajak",
-            ),
-            controller: TextEditingController(text: objekPajak),
-            onChanged: (val){ 
-              setState(() {
-                objekPajak = val;
-              });
-            },
-            validator: (val) => val.isEmpty ? "Kolom harus diisi" : null,
-            onSaved: (val) => objekPajak = val,
-          )
-        ),
+            leading: Icon(Icons.category),
+            title: TextFormField(
+              maxLines: 1,
+              textCapitalization: TextCapitalization.words,
+              decoration: InputDecoration(
+                helperText: "Objek Bebas Pajak",
+              ),
+              controller: TextEditingController(text: objekPajak),
+              onChanged: (val) {
+                setState(() {
+                  objekPajak = val;
+                });
+              },
+              validator: (val) => val.isEmpty ? "Kolom harus diisi" : null,
+              onSaved: (val) => objekPajak = val,
+            )),
       ],
     );
   }
-  
-  Widget formKeteranganCerai(){
+
+  Widget formKeteranganCerai() {
     return Column(
       children: <Widget>[
         ListTile(
-         leading: Icon(Icons.broken_image), 
-         title: DropdownButtonFormField(
+          leading: Icon(Icons.broken_image),
+          title: DropdownButtonFormField(
             autovalidate: true,
             isExpanded: true,
             hint: Text("Status Cerai"),
@@ -1123,8 +1099,8 @@ class _NewLetterState extends State<NewLetter> {
                 child: Text("Cerai Hidup"),
               ),
             ],
-            onChanged: (val){
-              setState(() {  
+            onChanged: (val) {
+              setState(() {
                 statCerai = val;
                 setForm();
               });
@@ -1134,132 +1110,122 @@ class _NewLetterState extends State<NewLetter> {
           ),
         ),
         ListTile(
-         leading: Icon(Icons.account_circle), 
-         title: TextFormField(
-            maxLines: 1,
-            textCapitalization: TextCapitalization.words,
-            controller: TextEditingController(
-              text: namaPasangan,
-            ),
-            decoration: InputDecoration(
-              helperText: "Nama Pasangan",
-            ),
-            onChanged: (val){
-              setState(() {
-                namaPasangan = val; 
-              });
-            },
-            validator: (val) => val.isEmpty ? "Kolom harus diisi" : null,
-            onSaved: (val) => namaPasangan = val,
-          )
-        ),
+            leading: Icon(Icons.account_circle),
+            title: TextFormField(
+              maxLines: 1,
+              textCapitalization: TextCapitalization.words,
+              controller: TextEditingController(
+                text: namaPasangan,
+              ),
+              decoration: InputDecoration(
+                helperText: "Nama Pasangan",
+              ),
+              onChanged: (val) {
+                setState(() {
+                  namaPasangan = val;
+                });
+              },
+              validator: (val) => val.isEmpty ? "Kolom harus diisi" : null,
+              onSaved: (val) => namaPasangan = val,
+            )),
         ListTile(
-         leading: Icon(Icons.access_time), 
-         title: TextFormField(
-            maxLines: 1,
-            maxLength: 4,
-            controller: TextEditingController(
-              text: tahunCerai,
-            ),
-            keyboardType: TextInputType.number,
-            decoration: InputDecoration(
-              helperText: "Tahun Cerai",
-            ),
-            onChanged: (val){
-              setState(() {
-                tahunCerai = val;
-              });
-            },
-            validator: (val) => val.toString().isEmpty ? "Kolom harus diisi" : null,
-            onSaved: (val) => tahunCerai = val,
-          )
-        ),
+            leading: Icon(Icons.access_time),
+            title: TextFormField(
+              maxLines: 1,
+              maxLength: 4,
+              controller: TextEditingController(
+                text: tahunCerai,
+              ),
+              keyboardType: TextInputType.number,
+              decoration: InputDecoration(
+                helperText: "Tahun Cerai",
+              ),
+              onChanged: (val) {
+                setState(() {
+                  tahunCerai = val;
+                });
+              },
+              validator: (val) =>
+                  val.toString().isEmpty ? "Kolom harus diisi" : null,
+              onSaved: (val) => tahunCerai = val,
+            )),
         ListTile(
-         leading: Icon(Icons.map), 
-         title: TextFormField(
-            maxLines: 1,
-            textCapitalization: TextCapitalization.words,
-            controller: TextEditingController(
-              text: tempatCerai
-            ),
-            decoration: InputDecoration(
-              helperText: "Tempat Cerai",
-            ),
-            onChanged: (val){
-              setState(() {
-                tempatCerai = val;
-              });
-            },
-            validator: (val) => val.isEmpty ? "Kolom harus diisi" : null,
-            onSaved: (val) => tempatCerai = val,
-          )
-        ),
+            leading: Icon(Icons.map),
+            title: TextFormField(
+              maxLines: 1,
+              textCapitalization: TextCapitalization.words,
+              controller: TextEditingController(text: tempatCerai),
+              decoration: InputDecoration(
+                helperText: "Tempat Cerai",
+              ),
+              onChanged: (val) {
+                setState(() {
+                  tempatCerai = val;
+                });
+              },
+              validator: (val) => val.isEmpty ? "Kolom harus diisi" : null,
+              onSaved: (val) => tempatCerai = val,
+            )),
       ],
     );
   }
-  
-  Widget formKeteranganHilang(){
+
+  Widget formKeteranganHilang() {
     return Column(
       children: <Widget>[
         ListTile(
-         leading: Icon(Icons.search), 
-         title: TextFormField(
-            maxLines: 1,
-            textCapitalization: TextCapitalization.words,
-            decoration: InputDecoration(
-              helperText: "Objek Hilang",
-            ),
-            controller: TextEditingController(text: objekHilang),
-            onChanged: (val){ 
-              setState(() {
-                objekHilang = val;
-              });
-            },
-            validator: (val) => val.isEmpty ? "Kolom harus diisi" : null,
-            onSaved: (val) => objekHilang = val,
-          )
-        ),
+            leading: Icon(Icons.search),
+            title: TextFormField(
+              maxLines: 1,
+              textCapitalization: TextCapitalization.words,
+              decoration: InputDecoration(
+                helperText: "Objek Hilang",
+              ),
+              controller: TextEditingController(text: objekHilang),
+              onChanged: (val) {
+                setState(() {
+                  objekHilang = val;
+                });
+              },
+              validator: (val) => val.isEmpty ? "Kolom harus diisi" : null,
+              onSaved: (val) => objekHilang = val,
+            )),
         ListTile(
-         leading: Icon(Icons.map), 
-         title: TextFormField(
-            maxLines: 1,
-            textCapitalization: TextCapitalization.words,
-            decoration: InputDecoration(
-              helperText: "Tempat Hilang",
-            ),
-            controller: TextEditingController(text: tempatHilang),
-            onChanged: (val){ 
-              setState(() {
-                tempatHilang = val;
-              });
-            },
-            validator: (val) => val.isEmpty ? "Kolom harus diisi" : null,
-            onSaved: (val) => tempatHilang = val,
-          )
-        ),
+            leading: Icon(Icons.map),
+            title: TextFormField(
+              maxLines: 1,
+              textCapitalization: TextCapitalization.words,
+              decoration: InputDecoration(
+                helperText: "Tempat Hilang",
+              ),
+              controller: TextEditingController(text: tempatHilang),
+              onChanged: (val) {
+                setState(() {
+                  tempatHilang = val;
+                });
+              },
+              validator: (val) => val.isEmpty ? "Kolom harus diisi" : null,
+              onSaved: (val) => tempatHilang = val,
+            )),
         ListTile(
-         leading: Icon(Icons.calendar_today), 
-         title: TextFormField(
+          leading: Icon(Icons.calendar_today),
+          title: TextFormField(
             readOnly: true,
-            controller: TextEditingController(
-              text: tanggalHilang
-            ),
-            decoration: InputDecoration(
-              helperText: "Tanggal Hilang"
-            ),
-            onTap: (){
+            controller: TextEditingController(text: tanggalHilang),
+            decoration: InputDecoration(helperText: "Tanggal Hilang"),
+            onTap: () {
               showDatePicker(
                 context: context,
-                initialDate: DateTime.now().subtract(Duration(days: 365*18)),
+                initialDate: DateTime.now().subtract(Duration(days: 365 * 18)),
                 firstDate: DateTime(1900),
                 lastDate: DateTime.now(),
-                builder: (BuildContext buildContext, Widget child){
+                builder: (BuildContext buildContext, Widget child) {
                   return Theme(
                     data: ThemeData.light(),
                     child: child,
                   );
                 },
-              ).then((val){
+              ).then((val) {
                 setState(() {
                   tanggalHilang = DateFormat("yyyy-MM-dd").format(val);
                   setForm();
@@ -1273,69 +1239,64 @@ class _NewLetterState extends State<NewLetter> {
       ],
     );
   }
-  
-  Widget formSalahNama(){
+
+  Widget formSalahNama() {
     return Column(
       children: <Widget>[
         ListTile(
-         leading: Icon(Icons.broken_image), 
-         title: TextFormField(
-            maxLines: 1,
-            textCapitalization: TextCapitalization.words,
-            decoration: InputDecoration(
-              helperText: "Objek Salah Nama",
-            ),
-            controller: TextEditingController(text: objekSalahNama),
-            onChanged: (val){ 
-              setState(() {
-                objekSalahNama = val;
-              });
-            },
-            validator: (val) => val.isEmpty ? "Kolom harus diisi" : null,
-            onSaved: (val) => objekSalahNama = val,
-          )
-        ),
+            leading: Icon(Icons.broken_image),
+            title: TextFormField(
+              maxLines: 1,
+              textCapitalization: TextCapitalization.words,
+              decoration: InputDecoration(
+                helperText: "Objek Salah Nama",
+              ),
+              controller: TextEditingController(text: objekSalahNama),
+              onChanged: (val) {
+                setState(() {
+                  objekSalahNama = val;
+                });
+              },
+              validator: (val) => val.isEmpty ? "Kolom harus diisi" : null,
+              onSaved: (val) => objekSalahNama = val,
+            )),
         ListTile(
-         leading: Icon(Icons.account_circle), 
-         title: TextFormField(
-            maxLines: 1,
-            textCapitalization: TextCapitalization.words,
-            decoration: InputDecoration(
-              helperText: "Nama di Objek Salah Nama",
-            ),
-            controller: TextEditingController(text: namaObjekSalahNama),
-            onChanged: (val){ 
-              setState(() {
-                namaObjekSalahNama = val;
-              });
-            },
-            validator: (val) => val.isEmpty ? "Kolom harus diisi" : null,
-            onSaved: (val) => namaObjekSalahNama = val,
-          )
-        ),
+            leading: Icon(Icons.account_circle),
+            title: TextFormField(
+              maxLines: 1,
+              textCapitalization: TextCapitalization.words,
+              decoration: InputDecoration(
+                helperText: "Nama di Objek Salah Nama",
+              ),
+              controller: TextEditingController(text: namaObjekSalahNama),
+              onChanged: (val) {
+                setState(() {
+                  namaObjekSalahNama = val;
+                });
+              },
+              validator: (val) => val.isEmpty ? "Kolom harus diisi" : null,
+              onSaved: (val) => namaObjekSalahNama = val,
+            )),
         ListTile(
-         leading: Icon(Icons.cake), 
-         title: TextFormField(
+          leading: Icon(Icons.cake),
+          title: TextFormField(
             readOnly: true,
-            controller: TextEditingController(
-              text: tanggalLahirSalah
-            ),
+            controller: TextEditingController(text: tanggalLahirSalah),
             decoration: InputDecoration(
-              helperText: "Tanggal Lahir di Objek Salah Nama"
-            ),
-            onTap: (){
+                helperText: "Tanggal Lahir di Objek Salah Nama"),
+            onTap: () {
               showDatePicker(
                 context: context,
-                initialDate: DateTime.now().subtract(Duration(days: 365*18)),
+                initialDate: DateTime.now().subtract(Duration(days: 365 * 18)),
                 firstDate: DateTime(1900),
-                lastDate: DateTime.now().subtract(Duration(days: 360*18)),
-                builder: (BuildContext buildContext, Widget child){
+                lastDate: DateTime.now().subtract(Duration(days: 360 * 18)),
+                builder: (BuildContext buildContext, Widget child) {
                   return Theme(
                     data: ThemeData.light(),
                     child: child,
                   );
                 },
-              ).then((val){
+              ).then((val) {
                 setState(() {
                   tanggalLahirSalah = DateFormat("yyyy-MM-dd").format(val);
                   setForm();
@@ -1347,47 +1308,45 @@ class _NewLetterState extends State<NewLetter> {
           ),
         ),
         ListTile(
-         leading: Icon(Icons.location_city), 
-         title: TextFormField(
-            maxLines: 1,
-            textCapitalization: TextCapitalization.words,
-            decoration: InputDecoration(
-              helperText: "Tempat Lahir di Objek Salah Nama",
-            ),
-            controller: TextEditingController(text: tempatLahirSalah),
-            onChanged: (val){ 
-              setState(() {
-                tempatLahirSalah = val;
-              });
-            },
-            validator: (val) => val.isEmpty ? "Kolom harus diisi" : null,
-            onSaved: (val) => tempatLahirSalah = val,
-          )
-        ),
+            leading: Icon(Icons.location_city),
+            title: TextFormField(
+              maxLines: 1,
+              textCapitalization: TextCapitalization.words,
+              decoration: InputDecoration(
+                helperText: "Tempat Lahir di Objek Salah Nama",
+              ),
+              controller: TextEditingController(text: tempatLahirSalah),
+              onChanged: (val) {
+                setState(() {
+                  tempatLahirSalah = val;
+                });
+              },
+              validator: (val) => val.isEmpty ? "Kolom harus diisi" : null,
+              onSaved: (val) => tempatLahirSalah = val,
+            )),
         ListTile(
-          leading: Icon(Icons.people),
-          title: DropdownButton(
-            isExpanded: true,
-            hint: Text("Jenis Kelamin di Objek Salah Nama"),
-            value: jenKelSalah,
-            items: [
-              DropdownMenuItem(
-                value: "L",
-                child: Text("L"),
-              ),
-              DropdownMenuItem(
-                value: "P",
-                child: Text("P"),
-              ),
-            ],
-            onChanged: (val){
-              setState(() {  
-                jenKelSalah = val;
-                setForm();
-              });
-            },
-          )
-        ),
+            leading: Icon(Icons.people),
+            title: DropdownButton(
+              isExpanded: true,
+              hint: Text("Jenis Kelamin di Objek Salah Nama"),
+              value: jenKelSalah,
+              items: [
+                DropdownMenuItem(
+                  value: "L",
+                  child: Text("L"),
+                ),
+                DropdownMenuItem(
+                  value: "P",
+                  child: Text("P"),
+                ),
+              ],
+              onChanged: (val) {
+                setState(() {
+                  jenKelSalah = val;
+                  setForm();
+                });
+              },
+            )),
         ListTile(
           leading: Icon(Icons.location_on),
           title: TextFormField(
@@ -1397,7 +1356,7 @@ class _NewLetterState extends State<NewLetter> {
               helperText: "Alamat di Objek Salah Nama",
             ),
             controller: TextEditingController(text: alamatSalah),
-            onChanged: (val){ 
+            onChanged: (val) {
               setState(() {
                 alamatSalah = val;
               });
@@ -1409,242 +1368,368 @@ class _NewLetterState extends State<NewLetter> {
       ],
     );
   }
-  
-  Widget formKepMotor(){
+
+  Widget formKepMotor() {
     return Column(
       children: <Widget>[
         ListTile(
-         leading: Icon(Icons.branding_watermark), 
-         title: TextFormField(
-            maxLines: 1,
-            textCapitalization: TextCapitalization.characters,
-            decoration: InputDecoration(
-              helperText: "Nomor Polisi",
-            ),
-            controller: TextEditingController(text: nomorPolisi),
-            onChanged: (val){ 
-              setState(() {
-                nomorPolisi = val;
-              });
-            },
-            validator: (val) => val.isEmpty ? "Kolom harus diisi" : null,
-            // onSaved: (val) => nomorPolisi = val,
-          )
-        ),
+            leading: Icon(Icons.branding_watermark),
+            title: TextFormField(
+              maxLines: 1,
+              textCapitalization: TextCapitalization.characters,
+              decoration: InputDecoration(
+                helperText: "Nomor Polisi",
+              ),
+              controller: TextEditingController(text: nomorPolisi),
+              onChanged: (val) {
+                setState(() {
+                  nomorPolisi = val;
+                });
+              },
+              validator: (val) => val.isEmpty ? "Kolom harus diisi" : null,
+              // onSaved: (val) => nomorPolisi = val,
+            )),
         ListTile(
-         leading: Icon(Icons.local_offer), 
-         title: TextFormField(
-            maxLines: 1,
+            leading: Icon(Icons.local_offer),
+            title: TextFormField(
+              maxLines: 1,
+              textCapitalization: TextCapitalization.words,
+              decoration: InputDecoration(
+                helperText: "Merk",
+              ),
+              controller: TextEditingController(text: merk),
+              onChanged: (val) {
+                setState(() {
+                  merk = val;
+                });
+              },
+              validator: (val) => val.isEmpty ? "Kolom harus diisi" : null,
+              onSaved: (val) => merk = val,
+            )),
+        ListTile(
+            leading: Icon(Icons.category),
+            title: TextFormField(
+              maxLines: 1,
+              textCapitalization: TextCapitalization.words,
+              decoration: InputDecoration(
+                helperText: "Tipe",
+              ),
+              controller: TextEditingController(text: tipe),
+              onChanged: (val) {
+                setState(() {
+                  tipe = val;
+                });
+              },
+              validator: (val) => val.isEmpty ? "Kolom harus diisi" : null,
+              onSaved: (val) => tipe = val,
+            )),
+        ListTile(
+            leading: Icon(Icons.category),
+            title: TextFormField(
+              maxLines: 1,
+              textCapitalization: TextCapitalization.words,
+              decoration: InputDecoration(
+                helperText: "Jenis",
+              ),
+              controller: TextEditingController(text: jenis),
+              onChanged: (val) {
+                setState(() {
+                  jenis = val;
+                });
+              },
+              validator: (val) => val.isEmpty ? "Kolom harus diisi" : null,
+              onSaved: (val) => jenis = val,
+            )),
+        ListTile(
+            leading: Icon(Icons.access_time),
+            title: TextFormField(
+              maxLines: 1,
+              maxLength: 4,
+              keyboardType: TextInputType.number,
+              decoration: InputDecoration(
+                helperText: "Tahun Pembuatan",
+              ),
+              controller: TextEditingController(text: tahunBuat),
+              onChanged: (val) {
+                setState(() {
+                  tahunBuat = val;
+                });
+              },
+              validator: (val) => val.isEmpty ? "Kolom harus diisi" : null,
+              onSaved: (val) => tahunBuat = val,
+            )),
+        ListTile(
+            leading: Icon(Icons.access_time),
+            title: TextFormField(
+              maxLines: 1,
+              maxLength: 4,
+              keyboardType: TextInputType.number,
+              decoration: InputDecoration(
+                helperText: "Tahun Perakitan",
+              ),
+              controller: TextEditingController(text: tahunRakit),
+              onChanged: (val) {
+                setState(() {
+                  tahunRakit = val;
+                });
+              },
+              validator: (val) => val.isEmpty ? "Kolom harus diisi" : null,
+              onSaved: (val) => tahunRakit = val,
+            )),
+        ListTile(
+            leading: Icon(Icons.invert_colors),
+            title: TextFormField(
+              maxLines: 1,
+              textCapitalization: TextCapitalization.characters,
+              decoration: InputDecoration(
+                helperText: "Isi Silinder",
+              ),
+              controller: TextEditingController(text: isiSilinder),
+              onChanged: (val) {
+                setState(() {
+                  isiSilinder = val;
+                });
+              },
+              validator: (val) => val.isEmpty ? "Kolom harus diisi" : null,
+              onSaved: (val) => isiSilinder = val,
+            )),
+        ListTile(
+            leading: Icon(Icons.color_lens),
+            title: TextFormField(
+              maxLines: 1,
+              textCapitalization: TextCapitalization.words,
+              decoration: InputDecoration(
+                helperText: "Warna",
+              ),
+              controller: TextEditingController(text: warnaKendaraan),
+              onChanged: (val) {
+                setState(() {
+                  warnaKendaraan = val;
+                });
+              },
+              validator: (val) => val.isEmpty ? "Kolom harus diisi" : null,
+              onSaved: (val) => warnaKendaraan = val,
+            )),
+        ListTile(
+            leading: Icon(Icons.looks_3),
+            title: TextFormField(
+              maxLines: 1,
+              textCapitalization: TextCapitalization.characters,
+              decoration: InputDecoration(
+                helperText: "Nomor Rangka",
+              ),
+              controller: TextEditingController(text: nomorRangka),
+              onChanged: (val) {
+                setState(() {
+                  nomorRangka = val;
+                });
+              },
+              validator: (val) => val.isEmpty ? "Kolom harus diisi" : null,
+              onSaved: (val) => nomorRangka = val,
+            )),
+        ListTile(
+            leading: Icon(Icons.looks_4),
+            title: TextFormField(
+              maxLines: 1,
+              textCapitalization: TextCapitalization.characters,
+              decoration: InputDecoration(
+                helperText: "Nomor Mesin",
+              ),
+              controller: TextEditingController(text: nomorMesin),
+              onChanged: (val) {
+                setState(() {
+                  nomorMesin = val;
+                });
+              },
+              validator: (val) => val.isEmpty ? "Kolom harus diisi" : null,
+              onSaved: (val) => nomorMesin = val,
+            )),
+        ListTile(
+            leading: Icon(Icons.looks_5),
+            title: TextFormField(
+              maxLines: 1,
+              textCapitalization: TextCapitalization.characters,
+              decoration: InputDecoration(
+                helperText: "Nomor BPKB",
+              ),
+              controller: TextEditingController(text: nomorBPKB),
+              onChanged: (val) {
+                setState(() {
+                  nomorBPKB = val;
+                });
+              },
+              validator: (val) => val.isEmpty ? "Kolom harus diisi" : null,
+              onSaved: (val) => nomorBPKB = val,
+            )),
+        ListTile(
+            leading: Icon(Icons.account_circle),
+            title: TextFormField(
+              maxLines: 1,
+              textCapitalization: TextCapitalization.words,
+              decoration: InputDecoration(
+                helperText: "Atas Nama BPKB",
+              ),
+              controller: TextEditingController(text: atasNamaBPKB),
+              onChanged: (val) {
+                setState(() {
+                  atasNamaBPKB = val;
+                });
+              },
+              validator: (val) => val.isEmpty ? "Kolom harus diisi" : null,
+              onSaved: (val) => atasNamaBPKB = val,
+            )),
+      ],
+    );
+  }
+
+  Widget formKeteranganPemotonganHewan() {
+    return Column(
+      children: <Widget>[
+        ListTile(
+            leading: Icon(Icons.pets),
+            title: TextFormField(
+              maxLines: 1,
+              textCapitalization: TextCapitalization.words,
+              decoration: InputDecoration(
+                helperText: "Hewan",
+              ),
+              controller: TextEditingController(text: hewan),
+              onChanged: (val) {
+                setState(() {
+                  hewan = val;
+                });
+              },
+              validator: (val) => val.isEmpty ? "Kolom harus diisi" : null,
+              onSaved: (val) => hewan = val,
+            )),
+        ListTile(
+            leading: Icon(Icons.cake),
+            title: TextFormField(
+              maxLines: 1,
+              textCapitalization: TextCapitalization.words,
+              decoration: InputDecoration(
+                helperText: "Umur Hewan",
+              ),
+              controller: TextEditingController(text: umurHewan),
+              onChanged: (val) {
+                setState(() {
+                  umurHewan = val;
+                });
+              },
+              validator: (val) => val.isEmpty ? "Kolom harus diisi" : null,
+              onSaved: (val) => umurHewan = val,
+            )),
+        ListTile(
+          leading: Icon(Icons.color_lens),
+          title: TextFormField(
+            controller: TextEditingController(text: warnaBulu),
             textCapitalization: TextCapitalization.words,
-            decoration: InputDecoration(
-              helperText: "Merk",
-            ),
-            controller: TextEditingController(text: merk),
-            onChanged: (val){ 
-              setState(() {
-                merk = val;
-              });
-            },
+            decoration: InputDecoration(helperText: "Warna Bulu"),
             validator: (val) => val.isEmpty ? "Kolom harus diisi" : null,
-            onSaved: (val) => merk = val,
-          )
+            onSaved: (val) => warnaBulu = val,
+          ),
         ),
         ListTile(
-         leading: Icon(Icons.category), 
-         title: TextFormField(
-            maxLines: 1,
+          leading: Icon(Icons.color_lens),
+          title: TextFormField(
+            controller: TextEditingController(text: warnaEkor),
             textCapitalization: TextCapitalization.words,
-            decoration: InputDecoration(
-              helperText: "Tipe",
-            ),
-            controller: TextEditingController(text: tipe),
-            onChanged: (val){ 
-              setState(() {
-                tipe = val;
-              });
-            },
+            decoration: InputDecoration(helperText: "Warna Ekor"),
             validator: (val) => val.isEmpty ? "Kolom harus diisi" : null,
-            onSaved: (val) => tipe = val,
-          )
+            onSaved: (val) => warnaEkor = val,
+          ),
         ),
         ListTile(
-         leading: Icon(Icons.category), 
-         title: TextFormField(
-            maxLines: 1,
+          leading: Icon(Icons.color_lens),
+          title: TextFormField(
+            controller: TextEditingController(text: warnaKaki),
             textCapitalization: TextCapitalization.words,
-            decoration: InputDecoration(
-              helperText: "Jenis",
-            ),
-            controller: TextEditingController(text: jenis),
-            onChanged: (val){ 
-              setState(() {
-                jenis = val;
-              });
-            },
+            decoration: InputDecoration(helperText: "Warna Kaki"),
             validator: (val) => val.isEmpty ? "Kolom harus diisi" : null,
-            onSaved: (val) => jenis = val,
-          )
+            onSaved: (val) => warnaKaki = val,
+          ),
         ),
         ListTile(
-         leading: Icon(Icons.access_time), 
-         title: TextFormField(
-            maxLines: 1,
-            maxLength: 4,
-            keyboardType: TextInputType.number,
-            decoration: InputDecoration(
-              helperText: "Tahun Pembuatan",
-            ),
-            controller: TextEditingController(text: tahunBuat),
-            onChanged: (val){ 
-              setState(() {
-                tahunBuat = val;
-              });
-            },
-            validator: (val) => val.isEmpty ? "Kolom harus diisi" : null,
-            onSaved: (val) => tahunBuat = val,
-          )
-        ),
-        ListTile(
-         leading: Icon(Icons.access_time), 
-         title: TextFormField(
-            maxLines: 1,
-            maxLength: 4,
-            keyboardType: TextInputType.number,
-            decoration: InputDecoration(
-              helperText: "Tahun Perakitan",
-            ),
-            controller: TextEditingController(text: tahunRakit),
-            onChanged: (val){ 
-              setState(() {
-                tahunRakit = val;
-              });
-            },
-            validator: (val) => val.isEmpty ? "Kolom harus diisi" : null,
-            onSaved: (val) => tahunRakit = val,
-          )
-        ),
-        ListTile(
-         leading: Icon(Icons.invert_colors), 
-         title: TextFormField(
-            maxLines: 1,
-            textCapitalization: TextCapitalization.characters,
-            decoration: InputDecoration(
-              helperText: "Isi Silinder",
-            ),
-            controller: TextEditingController(text: isiSilinder),
-            onChanged: (val){ 
-              setState(() {
-                isiSilinder = val;
-              });
-            },
-            validator: (val) => val.isEmpty ? "Kolom harus diisi" : null,
-            onSaved: (val) => isiSilinder = val,
-          )
-        ),
-        ListTile(
-         leading: Icon(Icons.color_lens), 
-         title: TextFormField(
-            maxLines: 1,
+          leading: Icon(Icons.arrow_drop_up),
+          title: TextFormField(
+            controller: TextEditingController(text: tipeTanduk),
             textCapitalization: TextCapitalization.words,
-            decoration: InputDecoration(
-              helperText: "Warna",
-            ),
-            controller: TextEditingController(text: warnaKendaraan),
-            onChanged: (val){ 
-              setState(() {
-                warnaKendaraan = val;
-              });
-            },
+            decoration: InputDecoration(helperText: "Tipe Tanduk"),
             validator: (val) => val.isEmpty ? "Kolom harus diisi" : null,
-            onSaved: (val) => warnaKendaraan = val,
-          )
+            onSaved: (val) => tipeTanduk = val,
+          ),
         ),
         ListTile(
-         leading: Icon(Icons.looks_3), 
-         title: TextFormField(
-            maxLines: 1,
-            textCapitalization: TextCapitalization.characters,
-            decoration: InputDecoration(
-              helperText: "Nomor Rangka",
-            ),
-            controller: TextEditingController(text: nomorRangka),
-            onChanged: (val){ 
-              setState(() {
-                nomorRangka = val;
-              });
-            },
-            validator: (val) => val.isEmpty ? "Kolom harus diisi" : null,
-            onSaved: (val) => nomorRangka = val,
-          )
-        ),
-        ListTile(
-         leading: Icon(Icons.looks_4),
-         title: TextFormField(
-            maxLines: 1,
-            textCapitalization: TextCapitalization.characters,
-            decoration: InputDecoration(
-              helperText: "Nomor Mesin",
-            ),
-            controller: TextEditingController(text: nomorMesin),
-            onChanged: (val){ 
-              setState(() {
-                nomorMesin = val;
-              });
-            },
-            validator: (val) => val.isEmpty ? "Kolom harus diisi" : null,
-            onSaved: (val) => nomorMesin = val,
-          )
-        ),
-        ListTile(
-         leading: Icon(Icons.looks_5),
-         title: TextFormField(
-            maxLines: 1,
-            textCapitalization: TextCapitalization.characters,
-            decoration: InputDecoration(
-              helperText: "Nomor BPKB",
-            ),
-            controller: TextEditingController(text: nomorBPKB),
-            onChanged: (val){ 
-              setState(() {
-                nomorBPKB = val;
-              });
-            },
-            validator: (val) => val.isEmpty ? "Kolom harus diisi" : null,
-            onSaved: (val) => nomorBPKB = val,
-          )
-        ),
-        ListTile(
-         leading: Icon(Icons.account_circle),
-         title: TextFormField(
-            maxLines: 1,
+          leading: Icon(Icons.album),
+          title: TextFormField(
+            controller: TextEditingController(text: tandaLain),
             textCapitalization: TextCapitalization.words,
-            decoration: InputDecoration(
-              helperText: "Atas Nama BPKB",
-            ),
-            controller: TextEditingController(text: atasNamaBPKB),
-            onChanged: (val){ 
-              setState(() {
-                atasNamaBPKB = val;
-              });
-            },
+            decoration: InputDecoration(helperText: "Tanda Lain"),
+            onSaved: (val) => tandaLain = val,
+          ),
+        ),
+        ListTile(
+          leading: Icon(Icons.chat),
+          title: TextFormField(
+            controller: TextEditingController(text: alasanPemotongan),
+            textCapitalization: TextCapitalization.words,
+            decoration: InputDecoration(helperText: "Alasan Pemotongan"),
             validator: (val) => val.isEmpty ? "Kolom harus diisi" : null,
-            onSaved: (val) => atasNamaBPKB = val,
-          )
+            onSaved: (val) => alasanPemotongan = val,
+          ),
         ),
       ],
     );
   }
 
-  void setGeneralData(){
-    if(jenKel == null || kebangsaan == null || statNikah == null){
+  Widget formKeteranganAhliWaris() {
+    return Column(children: <Widget>[
+      ListTile(
+          leading: Icon(Icons.person),
+          title: TextFormField(
+            maxLines: 1,
+            textCapitalization: TextCapitalization.words,
+            decoration: InputDecoration(
+              helperText: "Pemberi Waris",
+            ),
+            controller: TextEditingController(text: pemberiWaris),
+            onChanged: (val) {
+              setState(() {
+                pemberiWaris = val;
+              });
+            },
+            validator: (val) => val.isEmpty ? "Kolom harus diisi" : null,
+            onSaved: (val) => pemberiWaris = val,
+          )),
+      ListTile(
+          leading: Icon(Icons.chat),
+          title: TextFormField(
+            maxLines: 1,
+            textCapitalization: TextCapitalization.words,
+            decoration: InputDecoration(
+              helperText: "Keterangan Pemberi Waris",
+            ),
+            controller: TextEditingController(text: keteranganPemberiWaris),
+            onChanged: (val) {
+              setState(() {
+                keteranganPemberiWaris = val;
+              });
+            },
+            validator: (val) => val.isEmpty ? "Kolom harus diisi" : null,
+            onSaved: (val) => keteranganPemberiWaris = val,
+          ))
+    ]);
+  }
+
+  void setGeneralData() {
+    if (jenKel == null || kebangsaan == null || statNikah == null) {
       Fluttertoast.showToast(
-        msg: "Kolom pilihan tidak boleh kosong",
-        toastLength: Toast.LENGTH_LONG,
-        gravity: ToastGravity.BOTTOM
-      );
-    }else{
-      Map<String,Object> data = {
-        "id_pemohon": idWarga, 
+          msg: "Kolom pilihan tidak boleh kosong",
+          toastLength: Toast.LENGTH_LONG,
+          gravity: ToastGravity.BOTTOM);
+    } else {
+      Map<String, Object> data = {
+        "id_pemohon": idWarga,
         "nomor_surat": "-",
         "nama": nama,
         "tempat_lahir": tempatLahir,
@@ -1662,12 +1747,11 @@ class _NewLetterState extends State<NewLetter> {
         "nip_ttd": "-"
       };
 
-
       switch (letterCode) {
         case "ket_pergi":
           setFormBerpergian(data);
           break;
-        case "ket_kelakuan": 
+        case "ket_kelakuan":
           setFormKelakuanBaik(data);
           break;
         case "ket_cerai":
@@ -1691,12 +1775,18 @@ class _NewLetterState extends State<NewLetter> {
         case "tang_ortu":
           setFormTangjabOrtu(data);
           break;
+        case "pot_hewan":
+          setFormPemotonganHewan(data);
+          break;
+        case "li_waris":
+          setFormAhliWaris(data);
+          break;
         default:
       }
     }
   }
 
-  void setFormBerpergian(Map<String, Object> generalData){
+  void setFormBerpergian(Map<String, Object> generalData) {
     Map<String, Object> subData = {
       "tipe_surat": "Keterangan Berpergian",
       "daerah_keberadaan": daerahKeberadaan,
@@ -1711,8 +1801,8 @@ class _NewLetterState extends State<NewLetter> {
     String formURI = "https://www.terraciv.me/api/set_surat_keterangan_pergi";
     submitForm(generalData, formURI);
   }
-  
-  void setFormKelakuanBaik(Map<String, Object> generalData){
+
+  void setFormKelakuanBaik(Map<String, Object> generalData) {
     Map<String, Object> subData = {
       "tipe_surat": "Keterangan Kelakuan Baik",
     };
@@ -1725,9 +1815,9 @@ class _NewLetterState extends State<NewLetter> {
     String formURI = "https://www.terraciv.me/api/set_surat_kelakuan_baik";
     submitForm(generalData, formURI);
   }
-  
-  void setFormKetCerai(Map<String, Object> generalData){
-    if(statCerai != null){
+
+  void setFormKetCerai(Map<String, Object> generalData) {
+    if (statCerai != null) {
       Map<String, Object> subData = {
         "tipe_surat": "Keterangan Cerai",
         "status_cerai": statCerai,
@@ -1743,19 +1833,18 @@ class _NewLetterState extends State<NewLetter> {
       // });
       String formURI = "https://www.terraciv.me/api/set_surat_keterangan_cerai";
       submitForm(generalData, formURI);
-    }else{
+    } else {
       setState(() {
         isLoading = false;
       });
       Fluttertoast.showToast(
-        msg: "Harap pilih status cerai",
-        toastLength: Toast.LENGTH_LONG,
-        gravity: ToastGravity.BOTTOM
-      );
+          msg: "Harap pilih status cerai",
+          toastLength: Toast.LENGTH_LONG,
+          gravity: ToastGravity.BOTTOM);
     }
   }
 
-  void setFormKepMotor(Map<String, Object> generalData){
+  void setFormKepMotor(Map<String, Object> generalData) {
     Map<String, Object> subData = {
       "tipe_surat": "Keterangan Kepemilikan Sepeda Motor",
       "nomor_polisi": nomorPolisi,
@@ -1781,7 +1870,7 @@ class _NewLetterState extends State<NewLetter> {
     submitForm(generalData, formURI);
   }
 
-  void setFormBebasPajak(Map<String, Object> generalData){
+  void setFormBebasPajak(Map<String, Object> generalData) {
     Map<String, Object> subData = {
       "tipe_surat": "Keterangan Bebas Pajak",
       "objek_pajak": objekPajak
@@ -1792,12 +1881,13 @@ class _NewLetterState extends State<NewLetter> {
     // setState(() {
     //   isLoading = false;
     // });
-    String formURI = "https://www.terraciv.me/api/set_surat_keterangan_bebas_pajak";
+    String formURI =
+        "https://www.terraciv.me/api/set_surat_keterangan_bebas_pajak";
     submitForm(generalData, formURI);
   }
 
-  void setFormBedaNama(Map<String, Object> generalData){
-    if(jenKelSalah != null){
+  void setFormBedaNama(Map<String, Object> generalData) {
+    if (jenKelSalah != null) {
       Map<String, Object> subData = {
         "tipe_surat": "Keterangan Beda Nama",
         "objek_salah_nama": objekSalahNama,
@@ -1813,18 +1903,18 @@ class _NewLetterState extends State<NewLetter> {
       // setState(() {
       //   isLoading = false;
       // });
-      String formURI = "https://www.terraciv.me/api/set_surat_keterangan_beda_nama";
+      String formURI =
+          "https://www.terraciv.me/api/set_surat_keterangan_beda_nama";
       submitForm(generalData, formURI);
-    }else{
+    } else {
       Fluttertoast.showToast(
-        msg: "Harap pilih jenis kelamin di objek salah nama",
-        toastLength: Toast.LENGTH_LONG,
-        gravity: ToastGravity.BOTTOM
-      );
+          msg: "Harap pilih jenis kelamin di objek salah nama",
+          toastLength: Toast.LENGTH_LONG,
+          gravity: ToastGravity.BOTTOM);
     }
   }
 
-  void setFormKehilangan(Map<String, Object> generalData){
+  void setFormKehilangan(Map<String, Object> generalData) {
     Map<String, Object> subData = {
       "tipe_surat": "Keterangan Kehilangan",
       "objek_hilang": objekHilang,
@@ -1837,20 +1927,21 @@ class _NewLetterState extends State<NewLetter> {
     // setState(() {
     //   isLoading = false;
     // });
-    String formURI = "https://www.terraciv.me/api/set_surat_keterangan_kehilangan";
+    String formURI =
+        "https://www.terraciv.me/api/set_surat_keterangan_kehilangan";
     submitForm(generalData, formURI);
   }
-  
-  void setFormKetNikah(Map<String, Object> generalData){
+
+  void setFormKetNikah(Map<String, Object> generalData) {
     String jenKelPas = "";
 
-    if(jenKel == "L"){
+    if (jenKel == "L") {
       jenKelPas = "P";
-    }else{
+    } else {
       jenKelPas = "L";
     }
 
-    if(kebangsaanPasangan != null){
+    if (kebangsaanPasangan != null) {
       Map<String, Object> subData = {
         "tipe_surat": "Keterangan Telah Menikah",
         "nama_pasangan": namaPasangan,
@@ -1870,19 +1961,19 @@ class _NewLetterState extends State<NewLetter> {
       // setState(() {
       //   isLoading = false;
       // });
-      String formURI = "https://www.terraciv.me/api/set_surat_keterangan_telah_menikah";
+      String formURI =
+          "https://www.terraciv.me/api/set_surat_keterangan_telah_menikah";
       submitForm(generalData, formURI);
-    }else{
+    } else {
       Fluttertoast.showToast(
-        msg: "Harap pilih kebangsaan pasangan",
-        toastLength: Toast.LENGTH_LONG,
-        gravity: ToastGravity.BOTTOM
-      );
+          msg: "Harap pilih kebangsaan pasangan",
+          toastLength: Toast.LENGTH_LONG,
+          gravity: ToastGravity.BOTTOM);
     }
   }
 
-  void setFormTangjabOrtu(Map<String, Object> generalData){
-    if(jenKelAnak != null && kebangsaanAnak != null && hubunganOrtu != null){
+  void setFormTangjabOrtu(Map<String, Object> generalData) {
+    if (jenKelAnak != null && kebangsaanAnak != null && hubunganOrtu != null) {
       Map<String, Object> subData = {
         "tipe_surat": "Pertanggungjawaban Orang Tua",
         "nama_anak": namaAnak,
@@ -1908,62 +1999,97 @@ class _NewLetterState extends State<NewLetter> {
       // setState(() {
       //   isLoading = false;
       // });
-      String formURI = "https://www.terraciv.me/api/set_surat_pertanggung_jawaban_ortu";
+      String formURI =
+          "https://www.terraciv.me/api/set_surat_pertanggung_jawaban_ortu";
       submitForm(generalData, formURI);
-    }else{
+    } else {
       Fluttertoast.showToast(
-        msg: "Kolom pilihan tidak boleh kosong",
-        toastLength: Toast.LENGTH_LONG,
-        gravity: ToastGravity.BOTTOM
-      );
+          msg: "Kolom pilihan tidak boleh kosong",
+          toastLength: Toast.LENGTH_LONG,
+          gravity: ToastGravity.BOTTOM);
     }
   }
 
-  void submitForm(Map<String, Object> body, String formURI) async{
-    try{
-      Map<String,String> header = {
-        "x-api-key": "5baa441c93eaa4d6fb824dfc561a96d6",
-        "Content-Type": "application/x-www-form-urlencoded"};
-      http.Response data = await http.post(formURI, body: body, headers: header).timeout(
-        Duration(seconds: 300),
-        onTimeout: (){
-          isLoading = false;
+  void setFormPemotonganHewan(Map<String, Object> generalData) {
+    Map<String, Object> subData = {
+      "tipe_surat": "Keterangan Pemotongan Hewan",
+      "hewan": hewan,
+      "umur_hewan": umurHewan,
+      "warna_bulu": warnaBulu,
+      "warna_ekor": warnaEkor,
+      "tipe_tanduk": tipeTanduk,
+      "warna_kaki": warnaKaki,
+      "tanda_lain": tandaLain,
+      "alasan_pemotongan": alasanPemotongan
+    };
 
-          Fluttertoast.showToast(
+    generalData.addAll(subData);
+    // print(generalData);
+
+    String formURI = "https://www.terraciv.me/api/set_surat_pemotongan_hewan";
+    submitForm(generalData, formURI);
+  }
+
+  void setFormAhliWaris(Map<String, Object> generalData) {
+    Map<String, Object> subData = {
+      "tipe_surat": "Keterangan Ahli Waris",
+      "pemberi_waris": pemberiWaris,
+      "keterangan_pemberi_waris": keteranganPemberiWaris,
+    };
+
+    generalData.addAll(subData);
+    // print(generalData);
+
+    String formURI = "https://www.terraciv.me/api/set_surat_ahli_waris";
+    submitForm(generalData, formURI);
+  }
+
+  void submitForm(Map<String, Object> body, String formURI) async {
+    try {
+      Map<String, String> header = {
+        "x-api-key": "5baa441c93eaa4d6fb824dfc561a96d6",
+        "Content-Type": "application/x-www-form-urlencoded"
+      };
+      http.Response data = await http
+          .post(formURI, body: body, headers: header)
+          .timeout(Duration(seconds: 300), onTimeout: () {
+        isLoading = false;
+
+        Fluttertoast.showToast(
             msg: "Timeout Koneksi",
             toastLength: Toast.LENGTH_LONG,
-            gravity: ToastGravity.BOTTOM
-          );
+            gravity: ToastGravity.BOTTOM);
 
-          return null;
-        }
-      );
+        return null;
+      });
 
       setState(() {
         isLoading = false;
       });
 
-      if(data.statusCode == 200){
+      if (data.statusCode == 200) {
         Fluttertoast.showToast(
-          msg: "Data Berhasil Dikirim",
-          toastLength: Toast.LENGTH_LONG,
-          gravity: ToastGravity.BOTTOM
-        );
-        Navigator.of(context).pop();
-      }else{
-        
-      }
-    }catch(e){
+            msg: "Data Berhasil Dikirim",
+            toastLength: Toast.LENGTH_LONG,
+            gravity: ToastGravity.BOTTOM);
+
+        Map<String, Object> response = jsonDecode(data.body);
+
+        Navigator.push(
+            context,
+            MaterialPageRoute(
+                builder: (context) =>
+                    UploadProve(idSurat: response["Ekstra"])));
+      } else {}
+    } catch (e) {
       setState(() {
         isLoading = false;
       });
 
       Fluttertoast.showToast(
-        msg: e.toString(),
-        toastLength: Toast.LENGTH_LONG,
-        gravity: ToastGravity.BOTTOM
-      );
+          msg: e.toString(),
+          toastLength: Toast.LENGTH_LONG,
+          gravity: ToastGravity.BOTTOM);
     }
   }
-
 }
