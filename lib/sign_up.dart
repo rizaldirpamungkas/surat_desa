@@ -537,7 +537,7 @@ class _SignUpState extends State<SignUp> {
         "x-api-key": "5baa441c93eaa4d6fb824dfc561a96d6",
         "Content-Type": "application/x-www-form-urlencoded"};
 
-      String formURI = "https://www.terraciv.me/api/daftar_warga";
+      String formURI = "https://paondesajenggala.com/api/daftar_warga";
 
       final mimeTypeData = lookupMimeType(imageFile.path, headerBytes: [0xFF, 0xD8]).split('/');
       final daftarRequest = http.MultipartRequest('POST', Uri.parse(formURI));

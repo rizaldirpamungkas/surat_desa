@@ -13,13 +13,12 @@ class Login extends StatefulWidget {
 }
 
 class _LoginState extends State<Login> {
-
   String userName, passWord, errorMessage;
   final formKey = new GlobalKey<FormState>();
   bool isLoading, signInButtonStat;
 
   @override
-  void initState() {    
+  void initState() {
     errorMessage = "";
     isLoading = false;
     signInButtonStat = true;
@@ -30,41 +29,36 @@ class _LoginState extends State<Login> {
   @override
   Widget build(BuildContext context) {
     return WillPopScope(
-        onWillPop: (){
-          exit(0);
-          return Future.value(true);
-        },
-        child: Scaffold(
+      onWillPop: () {
+        exit(0);
+        return Future.value(true);
+      },
+      child: Scaffold(
         body: fullBody(),
       ),
     );
   }
 
-  Widget fullBody(){
+  Widget fullBody() {
     return Center(
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 30),
-        child: Stack(
-          children: <Widget>[
-            showCircularProgress(),
-            showForm()
-          ],
-        )
-      )
-    );
+        child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 30),
+            child: Stack(
+              children: <Widget>[showCircularProgress(), showForm()],
+            )));
   }
 
-  void checkStatus(){
-    getDataUser("idWarga").then((val){
-      if(val != null){
-        Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (context) => Home()));
+  void checkStatus() {
+    getDataUser("idWarga").then((val) {
+      if (val != null) {
+        Navigator.of(context)
+            .pushReplacement(MaterialPageRoute(builder: (context) => Home()));
       }
     });
   }
 
   Widget showErrorMessage() {
     if (errorMessage.length > 0 && errorMessage != null) {
-
       setState(() {
         isLoading = false;
         signInButtonStat = true;
@@ -85,47 +79,49 @@ class _LoginState extends State<Login> {
     }
   }
 
-  Widget showForm(){
+  Widget showForm() {
     return Container(
       child: Form(
         key: formKey,
         child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: <Widget>[
-              logo(),
-              spliter(),
-              usernameField(),
-              spliter(),
-              passwordField(),
-              signInButton(),
-              spliter(),
-              signUpButton(),
-              showHelp(),
-              showErrorMessage()
-            ],
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            logo(),
+            spliter(),
+            usernameField(),
+            spliter(),
+            passwordField(),
+            signInButton(),
+            spliter(),
+            signUpButton(),
+            showHelp(),
+            showErrorMessage()
+          ],
         ),
       ),
     );
   }
 
-  Widget showHelp(){
+  Widget showHelp() {
     return Row(
       mainAxisAlignment: MainAxisAlignment.start,
       children: <Widget>[
         Container(
           margin: EdgeInsets.only(top: 0),
-          child: IconButton(icon: Icon(Icons.help_outline, color: Theme.of(context).primaryColor), 
-          onPressed: (){
-            Navigator.pushNamed(context, "/help");
-          }),
+          child: IconButton(
+              icon: Icon(Icons.help_outline,
+                  color: Theme.of(context).primaryColor),
+              onPressed: () {
+                Navigator.pushNamed(context, "/help");
+              }),
         ),
       ],
     );
   }
 
-  Widget logo() =>  Logo();
+  Widget logo() => Logo();
 
-  Widget usernameField(){ 
+  Widget usernameField() {
     return TextFormField(
       style: TextStyle(fontFamily: 'Montserrat', fontSize: 20.0),
       maxLines: 1,
@@ -138,12 +134,13 @@ class _LoginState extends State<Login> {
           color: Colors.grey,
         ),
       ),
-      validator: (value) => value.isEmpty ? 'Username tidak boleh kosong' : null,
+      validator: (value) =>
+          value.isEmpty ? 'Username tidak boleh kosong' : null,
       onSaved: (value) => userName = value.trim(),
     );
   }
 
-  Widget passwordField(){ 
+  Widget passwordField() {
     return TextFormField(
       style: TextStyle(fontFamily: 'Montserrat', fontSize: 20.0),
       obscureText: true,
@@ -157,53 +154,48 @@ class _LoginState extends State<Login> {
           color: Colors.grey,
         ),
       ),
-      validator: (value) => value.isEmpty ? 'Password tidak boleh kosong' : null,
+      validator: (value) =>
+          value.isEmpty ? 'Password tidak boleh kosong' : null,
       onSaved: (value) => passWord = value.trim(),
     );
   }
 
   Widget spliter() => SizedBox(height: 5);
 
-  Widget signInButton(){ 
+  Widget signInButton() {
     return Padding(
       padding: EdgeInsets.only(top: 20),
       child: SizedBox(
         height: 40.0,
-            child: RaisedButton(
-              elevation: 5.0,
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(30.0)),
-              color: Color(0xFF18D191),
-              child: Text(
-                "Masuk", 
+        child: RaisedButton(
+            elevation: 5.0,
+            shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(30.0)),
+            color: Color(0xFF18D191),
+            child: Text("Masuk",
                 style: TextStyle(
-                  fontFamily: 'Montserrat', 
-                  fontSize: 20.0,
-                  color: Colors.white,
-                  fontWeight: FontWeight.w500,
-                  letterSpacing: 3
-                )
-              ),
-              disabledColor: Colors.grey,
-              disabledElevation: 0,
-              onPressed: signInButtonStat ? validateAndSubmit : null
-            ),
+                    fontFamily: 'Montserrat',
+                    fontSize: 20.0,
+                    color: Colors.white,
+                    fontWeight: FontWeight.w500,
+                    letterSpacing: 3)),
+            disabledColor: Colors.grey,
+            disabledElevation: 0,
+            onPressed: signInButtonStat ? validateAndSubmit : null),
       ),
     );
   }
 
-  Widget signUpButton(){
+  Widget signUpButton() {
     return FlatButton(
-      child: Text(
-                  "Belum memiliki akun? Daftar disini", 
-                  style: TextStyle(
-                    fontFamily: 'Montserrat', 
-                    fontSize: 13.0,
-                    color: Color(0xFF18D191),
-                    fontWeight: FontWeight.w500,
-                  )
-                ),
-      onPressed: (){
+      child: Text("Belum memiliki akun? Daftar disini",
+          style: TextStyle(
+            fontFamily: 'Montserrat',
+            fontSize: 13.0,
+            color: Color(0xFF18D191),
+            fontWeight: FontWeight.w500,
+          )),
+      onPressed: () {
         Navigator.of(context).pushNamed("/registration");
       },
     );
@@ -241,40 +233,47 @@ class _LoginState extends State<Login> {
 
     if (validateAndSave()) {
       try {
-
         print("Trying Login");
 
-        String loginURI = "https://www.terraciv.me/api/login_warga";
-        Map<String,String> body = {"username": userName,"password": passWord};
-        Map<String,String> header = {
+        String loginURI = "https://paondesajenggala.com/api/login_warga";
+        Map<String, String> body = {"username": userName, "password": passWord};
+        Map<String, String> header = {
           "x-api-key": "5baa441c93eaa4d6fb824dfc561a96d6",
-          "Content-Type": "application/x-www-form-urlencoded"};
-        http.Response data = await http.post(loginURI, body: body, headers: header);
-        Map<String,Object> response = jsonDecode(data.body);
-        Map<String,Object> responseLogin = response["Data"];
-        
+          "Content-Type": "application/x-www-form-urlencoded"
+        };
+        http.Response data =
+            await http.post(loginURI, body: body, headers: header);
+        Map<String, Object> response = jsonDecode(data.body);
+        Map<String, Object> responseLogin = response["Data"];
+
         setState(() {
           isLoading = false;
           signInButtonStat = true;
         });
 
-        if(response["Code"] == 200){
+        if (response["Code"] == 200) {
           print("Pass Corect");
-          
-          String dataWargaURI = "https://www.terraciv.me/api/get_data_warga";
-          Map<String,String> body = {"username": userName,"id_warga": responseLogin["id_warga"]};
-          http.Response data = await http.post(dataWargaURI, body: body, headers: header);
-          Map<String,Object> dataWarga = jsonDecode(data.body);
-          Map<String,Object> detailDataWarga = dataWarga["Data"];
+
+          String dataWargaURI =
+              "https://paondesajenggala.com/api/get_data_warga";
+          Map<String, String> body = {
+            "username": userName,
+            "id_warga": responseLogin["id_warga"]
+          };
+          http.Response data =
+              await http.post(dataWargaURI, body: body, headers: header);
+          Map<String, Object> dataWarga = jsonDecode(data.body);
+          Map<String, Object> detailDataWarga = dataWarga["Data"];
 
           print(detailDataWarga);
-          setUserPreferences(detailDataWarga, responseLogin["id_warga"], userName, passWord);
-          Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (context) => Home()));
-        }else{
+          setUserPreferences(
+              detailDataWarga, responseLogin["id_warga"], userName, passWord);
+          Navigator.of(context)
+              .pushReplacement(MaterialPageRoute(builder: (context) => Home()));
+        } else {
           print("Pass Wrong");
           wrongPassDialog();
         }
-
       } catch (e) {
         print('Error: $e');
         setState(() {
@@ -284,10 +283,10 @@ class _LoginState extends State<Login> {
           formKey.currentState.reset();
         });
       }
-    }else{
+    } else {
       setState(() {
-          isLoading = false;
-          signInButtonStat = true;
+        isLoading = false;
+        signInButtonStat = true;
       });
     }
   }
@@ -315,8 +314,8 @@ class _LoginState extends State<Login> {
     );
   }
 
-  void setUserPreferences(Map<String, Object> dataWarga, String idWarga, 
-                          String userName, String pass) async{
+  void setUserPreferences(Map<String, Object> dataWarga, String idWarga,
+      String userName, String pass) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     prefs.setString("idWarga", idWarga);
     prefs.setString("userWarga", userName);
@@ -334,11 +333,8 @@ class _LoginState extends State<Login> {
     prefs.setString("pass", pass);
   }
 
-  
-
-  dynamic getDataUser(String key) async{
+  dynamic getDataUser(String key) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     return prefs.get(key) ?? null;
   }
-
 }

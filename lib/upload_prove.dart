@@ -250,7 +250,7 @@ class _UploadProveState extends State<UploadProve> {
           "Content-Type": "application/x-www-form-urlencoded"
         };
 
-        String formURI = "https://www.terraciv.me/api/upload_bukti";
+        String formURI = "https://paondesajenggala.com/api/upload_bukti";
 
         final buktiRequest = http.MultipartRequest('POST', Uri.parse(formURI));
 

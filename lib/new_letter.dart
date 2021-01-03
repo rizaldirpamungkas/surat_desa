@@ -1798,7 +1798,7 @@ class _NewLetterState extends State<NewLetter> {
     // setState(() {
     //   isLoading = false;
     // });
-    String formURI = "https://www.terraciv.me/api/set_surat_keterangan_pergi";
+    String formURI = "https://paondesajenggala.com/api/set_surat_keterangan_pergi";
     submitForm(generalData, formURI);
   }
 
@@ -1812,7 +1812,7 @@ class _NewLetterState extends State<NewLetter> {
     // setState(() {
     //   isLoading = false;
     // });
-    String formURI = "https://www.terraciv.me/api/set_surat_kelakuan_baik";
+    String formURI = "https://paondesajenggala.com/api/set_surat_kelakuan_baik";
     submitForm(generalData, formURI);
   }
 
@@ -1831,7 +1831,7 @@ class _NewLetterState extends State<NewLetter> {
       // setState(() {
       //   isLoading = false;
       // });
-      String formURI = "https://www.terraciv.me/api/set_surat_keterangan_cerai";
+      String formURI = "https://paondesajenggala.com/api/set_surat_keterangan_cerai";
       submitForm(generalData, formURI);
     } else {
       setState(() {
@@ -1866,7 +1866,7 @@ class _NewLetterState extends State<NewLetter> {
     // setState(() {
     //   isLoading = false;
     // });
-    String formURI = "https://www.terraciv.me/api/set_surat_keterangan_ksm";
+    String formURI = "https://paondesajenggala.com/api/set_surat_keterangan_ksm";
     submitForm(generalData, formURI);
   }
 
@@ -1882,7 +1882,7 @@ class _NewLetterState extends State<NewLetter> {
     //   isLoading = false;
     // });
     String formURI =
-        "https://www.terraciv.me/api/set_surat_keterangan_bebas_pajak";
+        "https://paondesajenggala.com/api/set_surat_keterangan_bebas_pajak";
     submitForm(generalData, formURI);
   }
 
@@ -1904,7 +1904,7 @@ class _NewLetterState extends State<NewLetter> {
       //   isLoading = false;
       // });
       String formURI =
-          "https://www.terraciv.me/api/set_surat_keterangan_beda_nama";
+          "https://paondesajenggala.com/api/set_surat_keterangan_beda_nama";
       submitForm(generalData, formURI);
     } else {
       Fluttertoast.showToast(
@@ -1928,7 +1928,7 @@ class _NewLetterState extends State<NewLetter> {
     //   isLoading = false;
     // });
     String formURI =
-        "https://www.terraciv.me/api/set_surat_keterangan_kehilangan";
+        "https://paondesajenggala.com/api/set_surat_keterangan_kehilangan";
     submitForm(generalData, formURI);
   }
 
@@ -1962,7 +1962,7 @@ class _NewLetterState extends State<NewLetter> {
       //   isLoading = false;
       // });
       String formURI =
-          "https://www.terraciv.me/api/set_surat_keterangan_telah_menikah";
+          "https://paondesajenggala.com/api/set_surat_keterangan_telah_menikah";
       submitForm(generalData, formURI);
     } else {
       Fluttertoast.showToast(
@@ -2000,7 +2000,7 @@ class _NewLetterState extends State<NewLetter> {
       //   isLoading = false;
       // });
       String formURI =
-          "https://www.terraciv.me/api/set_surat_pertanggung_jawaban_ortu";
+          "https://paondesajenggala.com/api/set_surat_pertanggung_jawaban_ortu";
       submitForm(generalData, formURI);
     } else {
       Fluttertoast.showToast(
@@ -2026,7 +2026,7 @@ class _NewLetterState extends State<NewLetter> {
     generalData.addAll(subData);
     // print(generalData);
 
-    String formURI = "https://www.terraciv.me/api/set_surat_pemotongan_hewan";
+    String formURI = "https://paondesajenggala.com/api/set_surat_pemotongan_hewan";
     submitForm(generalData, formURI);
   }
 
@@ -2040,7 +2040,7 @@ class _NewLetterState extends State<NewLetter> {
     generalData.addAll(subData);
     // print(generalData);
 
-    String formURI = "https://www.terraciv.me/api/set_surat_ahli_waris";
+    String formURI = "https://paondesajenggala.com/api/set_surat_ahli_waris";
     submitForm(generalData, formURI);
   }
 

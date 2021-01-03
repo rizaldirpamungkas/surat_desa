@@ -88,7 +88,7 @@ class _DetailLetterState extends State<DetailLetter> {
         "x-api-key": "5baa441c93eaa4d6fb824dfc561a96d6",
         "Content-Type": "application/x-www-form-urlencoded"};
 
-      String formURI = "https://www.terraciv.me/api/get_detail_surat";
+      String formURI = "https://paondesajenggala.com/api/get_detail_surat";
       Map<String, Object> body = {"tipe" : surat.tipeSurat, "id_surat": surat.idSurat};
 
       http.Response data = await http.post(formURI, body: body, headers: header).timeout(

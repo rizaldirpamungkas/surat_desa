@@ -248,7 +248,7 @@ class _EditLetterState extends State<EditLetter> {
         "x-api-key": "5baa441c93eaa4d6fb824dfc561a96d6",
         "Content-Type": "application/x-www-form-urlencoded"};
 
-      String formURI = "https://www.terraciv.me/api/get_detail_surat";
+      String formURI = "https://paondesajenggala.com/api/get_detail_surat";
       Map<String, Object> body = {"tipe" : surat.tipeSurat, "id_surat": surat.idSurat};
 
       http.Response data = await http.post(formURI, body: body, headers: header).timeout(
@@ -2053,7 +2053,7 @@ class _EditLetterState extends State<EditLetter> {
 
       meta.addAll(body);
 
-      String formURI = "https://www.terraciv.me/api/update_surat";
+      String formURI = "https://paondesajenggala.com/api/update_surat";
 
       Map<String,String> header = {
         "x-api-key": "5baa441c93eaa4d6fb824dfc561a96d6",

@@ -18,7 +18,7 @@ class Logo extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
             Text(
-              "E-Desa Jenggala",
+              "PAON Desa Jenggala",
               style: TextStyle(
                 fontSize: 30,
                 color: Colors.black45,

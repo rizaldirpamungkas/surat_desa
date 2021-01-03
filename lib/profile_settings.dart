@@ -458,7 +458,7 @@ class _ProfileSettingsState extends State<ProfileSettings> {
         "x-api-key": "5baa441c93eaa4d6fb824dfc561a96d6",
         "Content-Type": "application/x-www-form-urlencoded"};
 
-      String formURI = "https://www.terraciv.me/api/update_data_warga";
+      String formURI = "https://paondesajenggala.com/api/update_data_warga";
 
       http.Response data = await http.post(formURI, body: body, headers: header).timeout(
         Duration(seconds: 300),

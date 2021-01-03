@@ -54,26 +54,26 @@ class _HistoryLetterState extends State<HistoryLetter> {
     }
   }
 
-  String statSurat(String noSurat) {
-    if (noSurat == "-") {
+  String statSurat(String status) {
+    if (status == "Draft" || status == "") {
       return "Belum Dicetak";
-    } else if (noSurat == "batal") {
+    } else if (status == "Batal") {
       return "Dibatalkan";
     } else {
       return "Sudah Dicetak";
     }
   }
 
-  String statTglCetak(String noSurat, String tgl) {
-    if (noSurat == "-" || noSurat == "batal") {
+  String statTglCetak(String status, String tgl) {
+    if (status == "Draft" || status == "Batal" || status == "") {
       return "-";
     } else {
       return tgl;
     }
   }
 
-  Widget statOptionCard(String noSurat, BuildContext context, int index) {
-    if (noSurat == "-") {
+  Widget statOptionCard(String status, BuildContext context, int index) {
+    if (status == "Draft" || status == "") {
       return PopupMenuButton(
         itemBuilder: (context) {
           return [
@@ -92,14 +92,6 @@ class _HistoryLetterState extends State<HistoryLetter> {
       );
     } else {
       return SizedBox.shrink();
-    }
-  }
-
-  String statNoSurat(String noSurat) {
-    if (noSurat == "batal") {
-      return "-";
-    } else {
-      return noSurat.toUpperCase();
     }
   }
 
@@ -130,7 +122,7 @@ class _HistoryLetterState extends State<HistoryLetter> {
         "Content-Type": "application/x-www-form-urlencoded"
       };
 
-      String formURI = "https://www.terraciv.me/api/get_warga_surat";
+      String formURI = "https://paondesajenggala.com/api/get_warga_surat";
       Map<String, Object> body = {"id_warga": idWarga};
 
       http.Response data = await http
@@ -151,6 +143,8 @@ class _HistoryLetterState extends State<HistoryLetter> {
       setState(() {
         isLoading = false;
       });
+
+      print("Data Empty");
 
       if (data != null) {
         if (data.statusCode == 200) {
@@ -199,7 +193,9 @@ class _HistoryLetterState extends State<HistoryLetter> {
             sur.tanggalSurat,
             sur.atasNamaTTD,
             sur.jabatanTTD,
-            sur.nipTTD));
+            sur.nipTTD,
+            sur.status,
+            sur.tanggalCetak));
   }
 
   void editLetter(int i, BuildContext context) async {
@@ -228,7 +224,9 @@ class _HistoryLetterState extends State<HistoryLetter> {
             sur.tanggalSurat,
             sur.atasNamaTTD,
             sur.jabatanTTD,
-            sur.nipTTD));
+            sur.nipTTD,
+            sur.status,
+            sur.tanggalCetak));
 
     if (stat) {
       setPref();
@@ -246,7 +244,7 @@ class _HistoryLetterState extends State<HistoryLetter> {
         "Content-Type": "application/x-www-form-urlencoded"
       };
 
-      String formURI = "https://www.terraciv.me/api/cancel_surat";
+      String formURI = "https://paondesajenggala.com/api/cancel_surat";
       Map<String, Object> body = {"id_surat": surats[i].idSurat};
 
       http.Response data = await http
@@ -305,7 +303,7 @@ class _HistoryLetterState extends State<HistoryLetter> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: <Widget>[
                       Text(
-                        statNoSurat(surats[index].noSurat),
+                        surats[index].noSurat.toUpperCase(),
                         style: TextStyle(
                             fontSize: 16,
                             fontFamily: "Montserrat",
@@ -324,7 +322,7 @@ class _HistoryLetterState extends State<HistoryLetter> {
                   ),
                   Column(
                     children: <Widget>[
-                      statOptionCard(surats[index].noSurat, context, index)
+                      statOptionCard(surats[index].status, context, index)
                     ],
                   ),
                 ],
@@ -336,7 +334,7 @@ class _HistoryLetterState extends State<HistoryLetter> {
                     children: <Widget>[
                       Text(
                         statTglCetak(
-                            surats[index].noSurat, surats[index].tanggalSurat),
+                            surats[index].status, surats[index].tanggalCetak),
                         style: TextStyle(
                             fontSize: 13,
                             fontFamily: "Montserrat",
@@ -347,7 +345,7 @@ class _HistoryLetterState extends State<HistoryLetter> {
                   Column(
                     children: <Widget>[
                       Text(
-                        statSurat(surats[index].noSurat),
+                        statSurat(surats[index].status),
                         style: TextStyle(
                             fontSize: 13,
                             fontFamily: "Montserrat",
@@ -374,7 +372,7 @@ class Surat {
       kebangsaan,
       statusPernikahan;
   String pekerjaan, alamat, jenisKelamin, nik, tanggalSurat, atasNamaTTD;
-  String jabatanTTD, nipTTD;
+  String jabatanTTD, nipTTD, status, tanggalCetak;
 
   Surat(
       this.noSurat,
@@ -397,7 +395,9 @@ class Surat {
       this.tanggalSurat,
       this.atasNamaTTD,
       this.jabatanTTD,
-      this.nipTTD);
+      this.nipTTD,
+      this.status,
+      this.tanggalCetak);
 
   factory Surat.fromJson(dynamic json) {
     return Surat(
@@ -421,11 +421,13 @@ class Surat {
         json["tanggal_surat"] as String,
         json["atas_nama_ttd"] as String,
         json["jabatan_ttd"] as String,
-        json["nip_ttd"] as String);
+        json["nip_ttd"] as String,
+        json["status"] as String,
+        json["tanggal_cetak"] as String);
   }
 
   @override
   String toString() {
-    return '{ ${this.noSurat}, ${this.idSurat}, ${this.idPemohon}, ${this.idPencetak}, ${this.pencetak}, ${this.tipeSurat}, ${this.nama}, ${this.pemohon}, ${this.tempatLahir}, ${this.tanggalLahir}, ${this.agama}, ${this.kebangsaan}, ${this.statusPernikahan}, ${this.pekerjaan}, ${this.alamat}, ${this.jenisKelamin}, ${this.nik}, ${this.tanggalSurat}, ${this.atasNamaTTD}, ${this.jabatanTTD}, ${this.nipTTD} }';
+    return '{ ${this.noSurat}, ${this.idSurat}, ${this.idPemohon}, ${this.idPencetak}, ${this.pencetak}, ${this.tipeSurat}, ${this.nama}, ${this.pemohon}, ${this.tempatLahir}, ${this.tanggalLahir}, ${this.agama}, ${this.kebangsaan}, ${this.statusPernikahan}, ${this.pekerjaan}, ${this.alamat}, ${this.jenisKelamin}, ${this.nik}, ${this.tanggalSurat}, ${this.atasNamaTTD}, ${this.jabatanTTD}, ${this.nipTTD}, ${this.status}, ${this.tanggalCetak} }';
   }
 }
